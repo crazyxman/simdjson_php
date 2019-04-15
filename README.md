@@ -24,7 +24,7 @@ $isValid = simdjson_isvalid($jsonString);
 $parsedJSON = simdjson_decode($jsonString);
 ```
 
-### Benchmarks 
+### Benchmarks (sec)
 filename|json_decode|simdjson_decode|simdjson_isvalid
 ---|:--:|---:|---:
 apache_builds.json|0.00307300|0.00225200|0.00018100
