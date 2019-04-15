@@ -42,3 +42,5 @@ twitter.json|0.01258600|0.00618400|0.00057400
 twitterescaped.json|0.01435900|0.00650400|0.00074300
 update-center.json|0.01506000|0.00869100|0.00047800
 
+You may run the benchmarks by running the commands:
+* php benchmark/benchmark.php
