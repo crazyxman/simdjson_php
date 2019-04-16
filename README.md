@@ -1,30 +1,30 @@
-# simdjson_php
-simdjson_php bindings for the simdjson project. https://github.com/lemire/simdjson
+# simdjson
+PHP bindings for the simdjson project. [https://github.com/lemire/simdjson](https://github.com/lemire/simdjson)
 
-### Requirement
+## Requirement
 * PHP 7.0 +
 * required g++7,C++17 support
 * it is required AVX2 support in order to use all of its powers. You may want to check whether your OS/processor supports it
   - OS X: `sysctl -a | grep machdep.cpu.leaf7_features`
   - Linux: `grep avx2 /proc/cpuinfo`
 
-### Compile simdjson_php in Linux
+## Compile simdjson in Linux
 ```
-$/path/to/phpize
-$./configure --with-php-config=/path/to/php-config
-$make && make install
-```
-
-### simdjson_php Usage
-```
-//Check if a JSON string is valid:
-$isValid = simdjson_isvalid($jsonString);
-
-//Parsing a JSON string
-$parsedJSON = simdjson_decode($jsonString);
+$ phpize
+$ ./configure
+$ make && make install
 ```
 
-### Benchmarks (sec)
+## Simdjson Usage
+```
+// Check if a JSON string is valid:
+$isValid = simd_json_valid($jsonString);
+
+// Parsing a JSON string
+$parsedJSON = simd_json_decode($jsonString);
+```
+
+## Benchmarks (sec)
 filename|json_decode|simdjson_decode|simdjson_isvalid
 ---|:--:|---:|---:
 apache_builds.json|0.00307300|0.00225200|0.00018100
@@ -44,3 +44,7 @@ update-center.json|0.01506000|0.00869100|0.00047800
 
 You may run the benchmarks by running the commands:
 * php benchmark/benchmark.php
+
+## License
+
+The Simdjson is licensed under the MIT license.
