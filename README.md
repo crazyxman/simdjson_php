@@ -3,7 +3,7 @@ simdjson_php bindings for the simdjson project. https://github.com/lemire/simdjs
 
 ### Requirement
 * PHP 7.0 +
-* required g++ 7,C++17 support
+* required g++ version:7+,C++17 support
 * it is required AVX2 support in order to use all of its powers. You may want to check whether your OS/processor supports it
   - OS X: `sysctl -a | grep machdep.cpu.leaf7_features`
   - Linux: `grep avx2 /proc/cpuinfo`
