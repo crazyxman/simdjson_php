@@ -1,5 +1,5 @@
 # simdjson_php
-php bindings for the simdjson project. https://arxiv.org/abs/1902.08318
+simdjson_php bindings for the simdjson project. https://github.com/lemire/simdjson
 
 ### Requirement
 * PHP 7.0 +
