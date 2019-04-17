@@ -28,15 +28,16 @@
 
 namespace simdjsonphp {
   bool isValid(std::string_view p);
-  void parse(std::string_view p, zval* return_value);
+  void parse(std::string_view p, zval* return_value, u_short assoc);
   zval makeArray(ParsedJson::iterator & pj);
+  zval makeObject(ParsedJson::iterator & pj);
 }
 
 #ifdef __cplusplus
 extern "C"{
 #endif
 	bool cplus_isValid(const char *json);
-    void cplus_parse(const char *json, zval* return_value);
+    void cplus_parse(const char *json, zval* return_value, u_short assoc);
 #ifdef __cplusplus
 }
 #endif
