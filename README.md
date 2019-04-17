@@ -18,10 +18,10 @@ $make && make install
 ### simdjson_php Usage
 ```
 //Check if a JSON string is valid:
-$isValid = simdjson_isvalid($jsonString);
+$isValid = simdjson_isvalid($jsonString); //return bool
 
 //Parsing a JSON string
-$parsedJSON = simdjson_decode($jsonString);
+$parsedJSON = simdjson_decode($jsonString, true); //return array|object|null
 ```
 
 ### Benchmarks (sec)
