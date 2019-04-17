@@ -31,14 +31,14 @@
 
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
 
-ZEND_BEGIN_ARG_INFO(simdjson_isvalid, 1)
+ZEND_BEGIN_ARG_INFO(simd_json_isvalid, 1)
 ZEND_ARG_INFO(0, json)
 ZEND_END_ARG_INFO()
 
 extern int cplus_isValid(const char *json);
 extern int cplus_parse(const char *json, zval* return_value);
 
-PHP_FUNCTION(simdjson_isvalid)
+PHP_FUNCTION(simd_json_valid)
 {
     zend_string *version = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &version) == FAILURE) {
@@ -48,7 +48,7 @@ PHP_FUNCTION(simdjson_isvalid)
     ZVAL_BOOL(return_value, is_json);
 }
 
-PHP_FUNCTION(simdjson_decode)
+PHP_FUNCTION(simd_json_decode)
 {
     zend_string *version = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &version) == FAILURE) {
@@ -59,8 +59,8 @@ PHP_FUNCTION(simdjson_decode)
 }
 
 zend_function_entry simdjson_functions[] = {
-        PHP_FE(simdjson_isvalid,                                 simdjson_isvalid)
-        PHP_FE(simdjson_decode,                                 simdjson_isvalid)
+        PHP_FE(simd_json_valid,                                  simd_json_isvalid)
+        PHP_FE(simd_json_decode,                                 simd_json_isvalid)
         {NULL, NULL, NULL}
 };
 
