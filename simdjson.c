@@ -17,9 +17,7 @@
 
 #include "php.h"
 #include "main/SAPI.h"
-#include "Zend/zend_alloc.h"
 #include "ext/standard/info.h"
-#include "ext/standard/php_string.h"
 
 #include "php_simdjson.h"
 #include "src/bindings.h"
@@ -27,29 +25,27 @@
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
 
 ZEND_BEGIN_ARG_INFO(simdjson_isvalid, 1)
-ZEND_ARG_INFO(0, json)
+        ZEND_ARG_INFO(0, json)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(simdjson_decode, 1)
-ZEND_ARG_INFO(0, json)
-ZEND_ARG_INFO(0, assoc)
+        ZEND_ARG_INFO(0, json)
+        ZEND_ARG_INFO(0, assoc)
 ZEND_END_ARG_INFO()
 
-extern int cplus_isValid(const char *json);
-extern int cplus_parse(const char *json, zval* return_value, u_short assoc);
+extern int cplus_isvalid(const char *json);
+extern int cplus_parse(const char *json, zval *return_value, u_short assoc);
 
-PHP_FUNCTION(simdjson_isvalid)
-{
+PHP_FUNCTION (simdjson_isvalid) {
     zend_string *version = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &version) == FAILURE) {
         return;
     }
-    short is_json = cplus_isValid(ZSTR_VAL(version));
+    short is_json = cplus_isvalid(ZSTR_VAL(version));
     ZVAL_BOOL(return_value, is_json);
 }
 
-PHP_FUNCTION(simdjson_decode)
-{
+PHP_FUNCTION (simdjson_decode) {
     zend_bool assoc = 0;
     zend_string *version = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|b", &version, &assoc) == FAILURE) {
@@ -58,39 +54,53 @@ PHP_FUNCTION(simdjson_decode)
     cplus_parse(ZSTR_VAL(version), return_value, assoc);
 }
 
+/* {{{ simdjson_functions[]
+*/
 zend_function_entry simdjson_functions[] = {
-        PHP_FE(simdjson_isvalid,                                 simdjson_isvalid)
-        PHP_FE(simdjson_decode,                                 simdjson_decode)
-        {NULL, NULL, NULL}
+    PHP_FE(simdjson_isvalid, simdjson_isvalid)
+    PHP_FE(simdjson_decode, simdjson_decode)
+    {NULL, NULL, NULL}
 };
+/* }}} */
 
-PHP_GINIT_FUNCTION(simdjson)
-{
-     memset(simdjson_globals, 0, sizeof(*simdjson_globals));
+/** {{{ PHP_GINIT_FUNCTION
+*/
+PHP_GINIT_FUNCTION (simdjson) {
+
 }
+/* }}} */
 
-PHP_MINIT_FUNCTION(simdjson)
-{
+/** {{{ PHP_MINIT_FUNCTION
+*/
+PHP_MINIT_FUNCTION (simdjson) {
     return SUCCESS;
 }
+/* }}} */
 
-PHP_MSHUTDOWN_FUNCTION(simdjson)
-{
+/** {{{ PHP_MSHUTDOWN_FUNCTION
+*/
+PHP_MSHUTDOWN_FUNCTION (simdjson) {
     return SUCCESS;
 }
+/* }}} */
 
-PHP_RINIT_FUNCTION(simdjson)
-{
+/** {{{ PHP_RINIT_FUNCTION
+*/
+PHP_RINIT_FUNCTION (simdjson) {
     return SUCCESS;
 }
+/* }}} */
 
-PHP_RSHUTDOWN_FUNCTION(simdjson)
-{
+/** {{{ PHP_RSHUTDOWN_FUNCTION
+*/
+PHP_RSHUTDOWN_FUNCTION (simdjson) {
     return SUCCESS;
 }
+/* }}} */
 
-PHP_MINFO_FUNCTION(simdjson)
-{
+/** {{{ PHP_MINFO_FUNCTION
+*/
+PHP_MINFO_FUNCTION (simdjson) {
     php_info_print_table_start();
     if (PG(expose_php) && !sapi_module.phpinfo_as_text) {
         php_info_print_table_header(2, "simdjson support", "enabled");
@@ -99,31 +109,32 @@ PHP_MINFO_FUNCTION(simdjson)
     }
 
     php_info_print_table_row(2, "Version", PHP_SIMDJSON_VERSION);
-    php_info_print_table_row(2, "Supports", "http://www.lycitea.com");
+    php_info_print_table_row(2, "Supports", SIMDJSON_SUPPORT_URL);
     php_info_print_table_end();
-
-
 }
+/* }}} */
 
+/** {{{ DL support
+ */
 #ifdef COMPILE_DL_SIMDJSON
 ZEND_GET_MODULE(simdjson)
 #endif
+/* }}} */
 
-#if ZEND_MODULE_API_NO >= 20050922
+/** {{{ module depends
+ */
 zend_module_dep simdjson_deps[] = {
-	{NULL, NULL, NULL}
+    {NULL, NULL, NULL}
 };
-#endif
+/* }}} */
 
+/** {{{ simdjson_module_entry
+*/
 zend_module_entry simdjson_module_entry = {
-#if ZEND_MODULE_API_NO >= 20050922
-STANDARD_MODULE_HEADER_EX, NULL,
-simdjson_deps,
-#else
-    STANDARD_MODULE_HEADER,
-#endif
+    STANDARD_MODULE_HEADER_EX, NULL,
+    simdjson_deps,
     "simdjson",
-simdjson_functions,
+    simdjson_functions,
     PHP_MINIT(simdjson),
     PHP_MSHUTDOWN(simdjson),
     PHP_RINIT(simdjson),
@@ -136,8 +147,15 @@ simdjson_functions,
     NULL,
     STANDARD_MODULE_PROPERTIES_EX
 };
+/* }}} */
 
 
-
-
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */
 

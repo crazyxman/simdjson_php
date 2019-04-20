@@ -12,23 +12,43 @@
 */
 
 #ifdef __AVX2__
-#include "simdjson.h"
-#include "php.h"
+
+#define SIMDJSON_NODE_TYPE_STRING       '"'
+#define SIMDJSON_NODE_TYPE_DOUBLE       'd'
+#define SIMDJSON_NODE_TYPE_FALSE        'f'
+#define SIMDJSON_NODE_TYPE_LONG         'l'
+#define SIMDJSON_NODE_TYPE_NULL         'n'
+#define SIMDJSON_NODE_TYPE_TRUE         't'
+#define SIMDJSON_NODE_TYPE_ARRAY        '['
+#define SIMDJSON_NODE_TYPE_OBJECT       '{'
 
 namespace simdjsonphp {
-  bool isValid(std::string_view p);
-  void parse(std::string_view p, zval* return_value, u_short assoc);
-  zval makeArray(ParsedJson::iterator & pj);
-  zval makeObject(ParsedJson::iterator & pj);
+
+    static bool isvalid(std::string_view p);
+
+    static void parse(std::string_view p, zval *return_value, u_short assoc);
+
+    static zval make_array(ParsedJson::iterator &pj);
+
+    static zval make_object(ParsedJson::iterator &pj);
 }
 
 #ifdef __cplusplus
-extern "C"{
+extern "C" {
 #endif
-	bool cplus_isValid(const char *json);
-    void cplus_parse(const char *json, zval* return_value, u_short assoc);
+bool cplus_isvalid(const char *json);
+void cplus_parse(const char *json, zval *return_value, u_short assoc);
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */
