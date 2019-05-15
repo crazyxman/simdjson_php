@@ -344,9 +344,9 @@ int json_parse(const uint8_t *buf, size_t len, ParsedJson &pj, bool reallocifnee
 }
 
 WARN_UNUSED
-ParsedJson build_parsed_json(const uint8_t *buf, size_t len, bool reallocifneeded) {
+ParsedJson build_parsed_json(const uint8_t *buf, size_t len, bool reallocifneeded, u_short depth) {
   ParsedJson pj;
-  bool ok = pj.allocateCapacity(len);
+  bool ok = pj.allocateCapacity(len, depth);
   if(ok) {
     int res = json_parse(buf, len, pj, reallocifneeded);
     ok = res == simdjson::SUCCESS;

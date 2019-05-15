@@ -17,7 +17,7 @@
 #include "simdjson.h"
 #include "bindings.h"
 
-static bool simdjsonphp::isvalid(std::string_view p) /* {{{ */ {
+static bool simdjsonphp::isvalid(std::string p) /* {{{ */ {
     ParsedJson pj = build_parsed_json(p);
     return pj.isValid();
 }
@@ -30,8 +30,8 @@ bool cplus_isvalid(const char *json) /* {{{ */ {
 
 /* }}} */
 
-static void simdjsonphp::parse(std::string_view p, zval *return_value, u_short assoc) /* {{{ */ {
-    ParsedJson pj = build_parsed_json(p);
+static void simdjsonphp::parse(std::string p, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
+    ParsedJson pj = build_parsed_json(p, depth);
     if (!pj.isValid()) {
         return;
     }
@@ -45,8 +45,8 @@ static void simdjsonphp::parse(std::string_view p, zval *return_value, u_short a
 
 /* }}} */
 
-void cplus_parse(const char *json, zval *return_value, u_short assoc) /* {{{ */ {
-    simdjsonphp::parse(json, return_value, assoc);
+void cplus_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
+    simdjsonphp::parse(json, return_value, assoc, depth);
 }
 
 /* }}} */

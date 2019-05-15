@@ -37254,7 +37254,7 @@ inline int json_parse(const padded_string &s, ParsedJson &pj) {
 // the input buf should be readable up to buf + len + SIMDJSON_PADDING  if reallocifneeded is false,
 // all bytes at and after buf + len  are ignored (can be garbage).
 WARN_UNUSED
-ParsedJson build_parsed_json(const uint8_t *buf, size_t len, bool reallocifneeded = true);
+ParsedJson build_parsed_json(const uint8_t *buf, size_t len, bool reallocifneeded = true, u_short depth = DEFAULTMAXDEPTH);
 
 WARN_UNUSED
 // Build a ParsedJson object. You can check validity
@@ -37263,8 +37263,8 @@ WARN_UNUSED
 // (a copy of the input string is made).
 // The input buf should be readable up to buf + len + SIMDJSON_PADDING if reallocifneeded is false,
 // all bytes at and after buf + len  are ignored (can be garbage).
-inline ParsedJson build_parsed_json(const char * buf, size_t len, bool reallocifneeded = true) {
-  return build_parsed_json(reinterpret_cast<const uint8_t *>(buf), len, reallocifneeded);
+inline ParsedJson build_parsed_json(const char * buf, size_t len, bool reallocifneeded = true, u_short depth = DEFAULTMAXDEPTH) {
+  return build_parsed_json(reinterpret_cast<const uint8_t *>(buf), len, reallocifneeded, depth);
 }
 
 // convenience function
@@ -37287,8 +37287,8 @@ WARN_UNUSED
 // A temporary buffer is created when needed during processing
 // (a copy of the input string is made).
 WARN_UNUSED
-inline ParsedJson build_parsed_json(const std::string &s) {
-  return build_parsed_json(s.data(), s.length(), true);
+inline ParsedJson build_parsed_json(const std::string &s, u_short depth = DEFAULTMAXDEPTH) {
+  return build_parsed_json(s.data(), s.length(), true, depth);
 }
 
 

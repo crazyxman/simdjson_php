@@ -24,9 +24,9 @@
 
 namespace simdjsonphp {
 
-    static bool isvalid(std::string_view p);
+    static bool isvalid(std::string p);
 
-    static void parse(std::string_view p, zval *return_value, u_short assoc);
+    static void parse(std::string p, zval *return_value, unsigned char assoc, u_short depth);
 
     static zval make_array(ParsedJson::iterator &pj);
 
@@ -37,7 +37,7 @@ namespace simdjsonphp {
 extern "C" {
 #endif
 bool cplus_isvalid(const char *json);
-void cplus_parse(const char *json, zval *return_value, u_short assoc);
+void cplus_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth);
 #ifdef __cplusplus
 }
 #endif

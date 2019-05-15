@@ -31,10 +31,11 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO(simdjson_decode, 1)
         ZEND_ARG_INFO(0, json)
         ZEND_ARG_INFO(0, assoc)
+        ZEND_ARG_INFO(0, depth)
 ZEND_END_ARG_INFO()
 
 extern int cplus_isvalid(const char *json);
-extern int cplus_parse(const char *json, zval *return_value, u_short assoc);
+extern int cplus_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth);
 
 PHP_FUNCTION (simdjson_isvalid) {
     zend_string *version = NULL;
@@ -47,11 +48,12 @@ PHP_FUNCTION (simdjson_isvalid) {
 
 PHP_FUNCTION (simdjson_decode) {
     zend_bool assoc = 0;
-    zend_string *version = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|b", &version, &assoc) == FAILURE) {
+    zend_long depth = 512;
+    zend_string *json = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|bl", &json, &assoc, &depth) == FAILURE) {
         return;
     }
-    cplus_parse(ZSTR_VAL(version), return_value, assoc);
+    cplus_parse(ZSTR_VAL(json), return_value, assoc, depth + 1);
 }
 
 /* {{{ simdjson_functions[]
