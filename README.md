@@ -20,8 +20,8 @@ $make && make install
 //Check if a JSON string is valid:
 $isValid = simdjson_isvalid($jsonString); //return bool
 
-//Parsing a JSON string
-$parsedJSON = simdjson_decode($jsonString, true); //return array|object|null
+//Parsing a JSON string. similar to the json_decode() function but without the fourth argument
+$parsedJSON = simdjson_decode($jsonString, true, 512); //return array|object|null
 ```
 
 ### Benchmarks (sec)
