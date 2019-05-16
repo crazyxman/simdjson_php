@@ -178,7 +178,7 @@ static zval simdjsonphp::make_object(ParsedJson::iterator &pjh) /* {{{ */ {
 static bool cplus_find_node(const char *json, const char *key, ParsedJson::iterator &pjh) /* {{{ */ {
 
     char *pkey = estrdup(key);
-    char const *seps = "\n\t";
+    char const *seps = "\t";
     char *token = strtok(pkey, seps);
     bool found = false;
 
