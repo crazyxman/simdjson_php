@@ -235,7 +235,11 @@ void cplus_fastget(const char *json, const char *key, zval *return_value, unsign
         return;
     }
     ParsedJson::iterator pjh(pj);
-    cplus_find_node(json, key, pjh);
+    bool is_found = cplus_find_node(json, key, pjh);
+
+    if(!is_found) {
+        return;
+    }
 
     if (assoc) {
         *return_value = simdjsonphp::make_array(pjh);
