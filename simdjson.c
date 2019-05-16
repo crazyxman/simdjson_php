@@ -51,7 +51,7 @@ extern void cplus_parse(const char *json, zval *return_value, unsigned char asso
 
 extern void cplus_fastget(const char *json, const char *key, zval *return_value, unsigned char assoc);
 
-extern bool cplus_key_exists(const char *json, const char *key);
+extern u_short cplus_key_exists(const char *json, const char *key);
 
 PHP_FUNCTION (simdjson_isvalid) {
     zend_string *version = NULL;
@@ -86,8 +86,14 @@ PHP_FUNCTION (simdjson_key_exists) {
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS", &json, &key) == FAILURE) {
         return;
     }
-    unsigned char is_exists = cplus_key_exists(ZSTR_VAL(json), ZSTR_VAL(key));
-    RETURN_BOOL(is_exists);
+    u_short is_exists = cplus_key_exists(ZSTR_VAL(json), ZSTR_VAL(key));
+    if (SIMDJSON_PARSE_FAIL == is_exists) {
+        RETURN_NULL();
+    } else if (SIMDJSON_PARSE_KEY_EXISTS == is_exists) {
+        RETURN_TRUE;
+    } else if (SIMDJSON_PARSE_KEY_NOEXISTS == is_exists) {
+        RETURN_FALSE;
+    }
 }
 
 /* {{{ simdjson_functions[]

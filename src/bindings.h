@@ -44,7 +44,7 @@ void cplus_parse(const char *json, zval *return_value, unsigned char assoc, u_sh
 
 void cplus_fastget(const char *json, const char *key, zval *return_value, unsigned char assoc);
 
-bool cplus_key_exists(const char *json, const char *key);
+u_short cplus_key_exists(const char *json, const char *key);
 
 #ifdef __cplusplus
 }

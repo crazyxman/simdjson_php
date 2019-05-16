@@ -18,6 +18,11 @@ extern zend_module_entry simdjson_module_entry;
 
 #define PHP_SIMDJSON_VERSION                  "1.0.0"
 #define SIMDJSON_SUPPORT_URL                  "https://github.com/crazyxman/simdjson_php"
+#define SIMDJSON_PARSE_FAIL                   0
+#define SIMDJSON_PARSE_SUCCESS                1
+#define SIMDJSON_PARSE_KEY_EXISTS             2
+#define SIMDJSON_PARSE_KEY_NOEXISTS           3
+
 
 extern PHPAPI void php_var_dump(zval **struc, int level);
 extern PHPAPI void php_debug_zval_dump(zval **struc, int level);

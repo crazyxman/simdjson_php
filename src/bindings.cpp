@@ -14,6 +14,8 @@
 #ifdef __AVX2__
 
 #include "php.h"
+#include "php_simdjson.h"
+
 #include "simdjson.h"
 #include "bindings.h"
 
@@ -244,14 +246,18 @@ void cplus_fastget(const char *json, const char *key, zval *return_value, unsign
 
 /* }}} */
 
-bool cplus_key_exists(const char *json, const char *key) /* {{{ */ {
+u_short cplus_key_exists(const char *json, const char *key) /* {{{ */ {
 
     ParsedJson pj = build_parsed_json(json);
     if (!pj.isValid()) {
-        return false;
+        return SIMDJSON_PARSE_FAIL;
     }
     ParsedJson::iterator pjh(pj);
-    return cplus_find_node(json, key, pjh);
+    bool is_found = cplus_find_node(json, key, pjh);
+    if (is_found) {
+        return SIMDJSON_PARSE_KEY_EXISTS;
+    }
+    return SIMDJSON_PARSE_KEY_NOEXISTS;
 }
 
 /* }}} */
