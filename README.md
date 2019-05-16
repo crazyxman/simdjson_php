@@ -16,12 +16,49 @@ $make && make install
 ```
 
 ### simdjson_php Usage
-```
+```php
+
 //Check if a JSON string is valid:
 $isValid = simdjson_isvalid($jsonString); //return bool
 
 //Parsing a JSON string. similar to the json_decode() function but without the fourth argument
-$parsedJSON = simdjson_decode($jsonString, true, 512); //return array|object|null
+$parsedJSON = simdjson_decode($jsonString, true, 512); //return array|object|null. "null" string is not a standard json
+
+/*
+{
+  "Image": {
+    "Width":  800,
+    "Height": 600,
+    "Title":  "View from 15th Floor",
+    "Thumbnail": {
+      "Url":    "http://www.example.com/image/481989943",
+      "Height": 125,
+      "Width":  100
+    },
+    "Animated" : false,
+    "IDs": [116, 943, 234, 38793, {"p": "30"}]
+  }
+}
+*/
+
+//note. "\t" is a separator. Can be used as the "key" of the object and the "index" of the array
+
+//Very quickly get the value of a "key" in a json string
+$value = simdjson_fastget($str, "Image\tThumbnail\tUrl");
+var_dump($value); // string(38) "http://www.example.com/image/481989943"
+
+$value = simdjson_fastget($str, "Image\tIDs\t4\tp", true);
+var_dump($value); 
+/*
+array(1) {
+  ["p"]=>
+  string(2) "30"
+}
+*/
+
+//Very quickly check if the key exists. return true|false|null. "true" exists, "false" does not exist, "null" string is not a standard json
+$res = simdjson_key_exists($str, "Image\tIDs\t1");
+var_dump($res) //bool(true)
 ```
 
 ### Benchmarks (sec)
