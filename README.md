@@ -41,7 +41,9 @@ $parsedJSON = simdjson_decode($jsonString, true, 512); //return array|object|nul
 }
 */
 
-//note. "\t" is a separator. Can be used as the "key" of the object and the "index" of the array
+//note. "\t" is a separator. It must be a control character. Can be used as the "key" of the object and the "index" of the array
+//E.g. "Image\tThumbnail\tUrl" is ok. 'Image\tThumbnail\tUrl' is wrong
+
 
 //Very quickly get the value of a "key" in a json string
 $value = simdjson_fastget($str, "Image\tThumbnail\tUrl");
