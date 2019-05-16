@@ -170,6 +170,90 @@ static zval simdjsonphp::make_object(ParsedJson::iterator &pjh) /* {{{ */ {
     }
     return v;
 }
+
+/* }}} */
+
+
+
+static bool cplus_find_node(const char *json, const char *key, ParsedJson::iterator &pjh) /* {{{ */ {
+
+    char *pkey = estrdup(key);
+    char const *seps = "\n\t";
+    char *token = strtok(pkey, seps);
+    bool found = false;
+
+    while (token != NULL) {
+        found = false;
+        if (pjh.is_object()) {
+            if (pjh.down()) {
+                do {
+                    if (strcmp(pjh.get_string(), token) == 0) {
+                        found = true;
+                        pjh.next();
+                        break;
+                    }
+                    pjh.next();
+                } while (pjh.next());
+            }
+        } else if (pjh.is_array()) {
+            if (pjh.down()) {
+                int n = 0, index = 0;
+                try {
+                    index = std::stoul(token);
+                } catch (...) {
+                    break;
+                }
+                do {
+                    if (n == index) {
+                        found = true;
+                        break;
+                    }
+                    n++;
+                } while (pjh.next());
+            }
+        }
+        if (!found) {
+            break;
+        }
+        token = strtok(NULL, seps);
+    }
+    efree(pkey);
+    if (found) {
+        return true;
+    }
+    return false;
+}
+
+/* }}} */
+
+void cplus_fastget(const char *json, const char *key, zval *return_value, unsigned char assoc) /* {{{ */ {
+
+    ParsedJson pj = build_parsed_json(json);
+    if (!pj.isValid()) {
+        return;
+    }
+    ParsedJson::iterator pjh(pj);
+    cplus_find_node(json, key, pjh);
+
+    if (assoc) {
+        *return_value = simdjsonphp::make_array(pjh);
+    } else {
+        *return_value = simdjsonphp::make_object(pjh);
+    }
+}
+
+/* }}} */
+
+bool cplus_key_exists(const char *json, const char *key) /* {{{ */ {
+
+    ParsedJson pj = build_parsed_json(json);
+    if (!pj.isValid()) {
+        return false;
+    }
+    ParsedJson::iterator pjh(pj);
+    return cplus_find_node(json, key, pjh);
+}
+
 /* }}} */
 
 #endif

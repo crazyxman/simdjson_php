@@ -31,13 +31,21 @@ namespace simdjsonphp {
     static zval make_array(ParsedJson::iterator &pj);
 
     static zval make_object(ParsedJson::iterator &pj);
+
 }
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 bool cplus_isvalid(const char *json);
+
 void cplus_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth);
+
+void cplus_fastget(const char *json, const char *key, zval *return_value, unsigned char assoc);
+
+bool cplus_key_exists(const char *json, const char *key);
+
 #ifdef __cplusplus
 }
 #endif
