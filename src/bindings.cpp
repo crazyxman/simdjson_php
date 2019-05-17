@@ -186,33 +186,36 @@ static bool cplus_find_node(const char *json, const char *key, ParsedJson::itera
 
     while (token != NULL) {
         found = false;
-        if (pjh.is_object()) {
-            if (pjh.down()) {
-                do {
-                    if (strcmp(pjh.get_string(), token) == 0) {
-                        found = true;
-                        pjh.next();
+        switch (pjh.get_type()) {
+            case SIMDJSON_NODE_TYPE_ARRAY :
+                if (pjh.down()) {
+                    int n = 0, index = 0;
+                    try {
+                        index = std::stoul(token);
+                    } catch (...) {
                         break;
                     }
-                    pjh.next();
-                } while (pjh.next());
-            }
-        } else if (pjh.is_array()) {
-            if (pjh.down()) {
-                int n = 0, index = 0;
-                try {
-                    index = std::stoul(token);
-                } catch (...) {
-                    break;
+                    do {
+                        if (n == index) {
+                            found = true;
+                            break;
+                        }
+                        n++;
+                    } while (pjh.next());
                 }
-                do {
-                    if (n == index) {
-                        found = true;
-                        break;
-                    }
-                    n++;
-                } while (pjh.next());
-            }
+                break;
+            case SIMDJSON_NODE_TYPE_OBJECT :
+                if (pjh.down()) {
+                    do {
+                        if (strcmp(pjh.get_string(), token) == 0) {
+                            found = true;
+                            pjh.next();
+                            break;
+                        }
+                        pjh.next();
+                    } while (pjh.next());
+                }
+                break;
         }
         if (!found) {
             break;
@@ -234,6 +237,7 @@ void cplus_fastget(const char *json, const char *key, zval *return_value, unsign
     if (!pj.isValid()) {
         return;
     }
+
     ParsedJson::iterator pjh(pj);
     bool is_found = cplus_find_node(json, key, pjh);
 
