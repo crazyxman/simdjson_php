@@ -49,7 +49,7 @@ $parsedJSON = simdjson_decode($jsonString, true, 512); //return array|object|nul
 $value = simdjson_fastget($str, "Image\tThumbnail\tUrl");
 var_dump($value); // string(38) "http://www.example.com/image/481989943"
 
-$value = simdjson_fastget($str, "Image\tIDs\t4\tp", true);
+$value = simdjson_fastget($str, "Image\tIDs\t4", true);
 var_dump($value); 
 /*
 array(1) {
