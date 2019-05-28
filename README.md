@@ -65,8 +65,6 @@ array(1) {
 $res = simdjson_key_exists($jsonString, "Image\tIDs\t1");
 var_dump($res) //bool(true)
 
-//todo...
-simdjson_resource($jsonString);
 ```
 
 ### Benchmarks (sec)
