@@ -24,85 +24,154 @@
 
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
 
-ZEND_BEGIN_ARG_INFO(simdjson_isvalid, 1)
+ZEND_BEGIN_ARG_INFO(simdjson_isvalid_arginfo, 1)
         ZEND_ARG_INFO(0, json)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(simdjson_decode, 1)
+ZEND_BEGIN_ARG_INFO(simdjson_decode_arginfo, 1)
         ZEND_ARG_INFO(0, json)
         ZEND_ARG_INFO(0, assoc)
         ZEND_ARG_INFO(0, depth)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(simdjson_fastget, 2)
+ZEND_BEGIN_ARG_INFO(simdjson_key_value_arginfo, 2)
         ZEND_ARG_INFO(0, json)
         ZEND_ARG_INFO(0, key)
         ZEND_ARG_INFO(0, assoc)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(simdjson_key_exists, 2)
+ZEND_BEGIN_ARG_INFO(simdjson_key_exists_arginfo, 2)
         ZEND_ARG_INFO(0, json)
         ZEND_ARG_INFO(0, key)
 ZEND_END_ARG_INFO()
 
-extern unsigned char cplus_isvalid(const char *json);
+ZEND_BEGIN_ARG_INFO(simdjson_resource_arginfo, 1)
+        ZEND_ARG_INFO(0, json)
+        ZEND_ARG_INFO(0, depth)
+ZEND_END_ARG_INFO()
 
-extern void cplus_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth);
+static int simdjson_pjh_resource_type;
+static int simdjson_pj_resource_type;
 
-extern void cplus_fastget(const char *json, const char *key, zval *return_value, unsigned char assoc);
+extern unsigned char cplus_simdjson_isvalid(const char *json);
 
-extern u_short cplus_key_exists(const char *json, const char *key);
+extern void cplus_simdjson_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth);
+
+extern void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth);
+
+extern void cplus_simdjson_key_value_pjh(void *pjh, const char *key, zval *return_value, unsigned char assoc);
+
+extern u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short depth);
+
+extern u_short cplus_simdjson_key_exists_pjh(void *pjh, const char *key);
+
+extern void *cplus_simdjson_resource(const char *json, void *pj, u_short depth);
+
+extern void cplus_simdjson_dtor(void *handle, u_short type);
 
 PHP_FUNCTION (simdjson_isvalid) {
-    zend_string *version = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &version) == FAILURE) {
+    zend_string *json = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &json) == FAILURE) {
         return;
     }
-    short is_json = cplus_isvalid(ZSTR_VAL(version));
+    short is_json = cplus_simdjson_isvalid(ZSTR_VAL(json));
     ZVAL_BOOL(return_value, is_json);
 }
 
 PHP_FUNCTION (simdjson_decode) {
     zend_bool assoc = 0;
-    zend_long depth = 512;
+    zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
     zend_string *json = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|bl", &json, &assoc, &depth) == FAILURE) {
         return;
     }
-    cplus_parse(ZSTR_VAL(json), return_value, assoc, depth + 1);
+    cplus_simdjson_parse(ZSTR_VAL(json), return_value, assoc, depth + 1);
 }
 
-PHP_FUNCTION (simdjson_fastget) {
+PHP_FUNCTION (simdjson_key_value) {
+
     zend_bool assoc = 0;
-    zend_string *json = NULL, *key = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS|b", &json, &key, &assoc) == FAILURE) {
+    zval *json = NULL;
+    zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
+    zend_string *key = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|bl", &json, &key, &assoc, &depth) == FAILURE) {
         return;
     }
-    cplus_fastget(ZSTR_VAL(json), ZSTR_VAL(key), return_value, assoc);
+    if (IS_STRING == Z_TYPE_P(json)) {
+        cplus_simdjson_key_value(Z_STRVAL_P(json), ZSTR_VAL(key), return_value, assoc, depth + 1);
+    } else if (IS_RESOURCE == Z_TYPE_P(json)) {
+        void *pjh = zend_fetch_resource(Z_RES_P(json), "simdjson_pjh", simdjson_pjh_resource_type);
+        if (NULL == pjh) {
+            return;
+        }
+        cplus_simdjson_key_value_pjh(pjh, ZSTR_VAL(key), return_value, assoc);
+    } else {
+        php_error_docref(NULL, E_WARNING, "expects parameter 1 to be resource or string");
+    }
+
 }
 
 PHP_FUNCTION (simdjson_key_exists) {
-    zend_string *json = NULL, *key = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS", &json, &key) == FAILURE) {
+    zval *json = NULL;
+    zend_string *key = NULL;
+    zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|l", &json, &key, &depth) == FAILURE) {
         return;
     }
-    u_short is_exists = cplus_key_exists(ZSTR_VAL(json), ZSTR_VAL(key));
-    if (SIMDJSON_PARSE_FAIL == is_exists) {
+    u_short stats = SIMDJSON_PARSE_FAIL;
+    if (IS_STRING == Z_TYPE_P(json)) {
+        stats = cplus_simdjson_key_exists(Z_STRVAL_P(json), ZSTR_VAL(key), depth + 1);
+    } else if (IS_RESOURCE == Z_TYPE_P(json)) {
+        void *pjh = zend_fetch_resource(Z_RES_P(json), "simdjson_pjh", simdjson_pjh_resource_type);
+        if (NULL != pjh) {
+            stats = cplus_simdjson_key_exists_pjh(pjh, ZSTR_VAL(key));
+        }
+    } else {
+        php_error_docref(NULL, E_WARNING, "expects parameter 1 to be resource or string");
+    }
+    if (SIMDJSON_PARSE_FAIL == stats) {
         RETURN_NULL();
-    } else if (SIMDJSON_PARSE_KEY_EXISTS == is_exists) {
+    } else if (SIMDJSON_PARSE_KEY_EXISTS == stats) {
         RETURN_TRUE;
-    } else if (SIMDJSON_PARSE_KEY_NOEXISTS == is_exists) {
+    } else if (SIMDJSON_PARSE_KEY_NOEXISTS == stats) {
         RETURN_FALSE;
     }
+}
+
+PHP_FUNCTION (simdjson_resource) {
+    zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
+    zend_string *json = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|l", &json, &depth) == FAILURE) {
+        return;
+    }
+    void *pj = NULL;
+    void *pjh = cplus_simdjson_resource(ZSTR_VAL(json), pj, depth);
+    if (NULL == pjh) {
+        RETURN_NULL();
+    }
+    zend_resource *res = zend_register_resource(pjh, simdjson_pjh_resource_type);
+    zend_register_resource(pj, simdjson_pj_resource_type);
+    RETURN_RES(res);
+}
+
+void simdjson_dtor(zend_resource *res) {
+
+    if (simdjson_pjh_resource_type == res->type) {
+        cplus_simdjson_dtor(res->ptr, SIMDJSON_RESOUCE_PJH_TYPE);
+    } else if (simdjson_pj_resource_type == res->type) {
+        cplus_simdjson_dtor(res->ptr, SIMDJSON_RESOUCE_PJ_TYPE);
+    }
+
 }
 
 /* {{{ simdjson_functions[]
 */
 zend_function_entry simdjson_functions[] = {
-    PHP_FE(simdjson_isvalid, simdjson_isvalid)
-    PHP_FE(simdjson_decode, simdjson_decode)
-    PHP_FE(simdjson_fastget, simdjson_fastget)
-    PHP_FE(simdjson_key_exists, simdjson_key_exists)
+    PHP_FE(simdjson_isvalid, simdjson_isvalid_arginfo)
+    PHP_FE(simdjson_decode, simdjson_decode_arginfo)
+    PHP_FE(simdjson_key_value, simdjson_key_value_arginfo)
+    PHP_FE(simdjson_key_exists, simdjson_key_exists_arginfo)
+    PHP_FE(simdjson_resource, simdjson_resource_arginfo)
     {NULL, NULL, NULL}
 };
 /* }}} */
@@ -117,6 +186,8 @@ PHP_GINIT_FUNCTION (simdjson) {
 /** {{{ PHP_MINIT_FUNCTION
 */
 PHP_MINIT_FUNCTION (simdjson) {
+    simdjson_pjh_resource_type = zend_register_list_destructors_ex(simdjson_dtor, NULL, "simdjson_pjh", module_number);
+    simdjson_pj_resource_type = zend_register_list_destructors_ex(simdjson_dtor, NULL, "simdjson_pj", module_number);
     return SUCCESS;
 }
 /* }}} */

@@ -19,35 +19,81 @@
 #include "simdjson.h"
 #include "bindings.h"
 
+
+WARN_UNUSED
+ParsedJson* build_parsed_json_cust(const uint8_t *buf, size_t len, bool reallocifneeded, u_short depth = DEFAULTMAXDEPTH) {
+    ParsedJson *pj = new ParsedJson();
+    bool ok = pj->allocateCapacity(len, depth);
+    if(ok) {
+        int res = json_parse(buf, len, *pj, reallocifneeded);
+        ok = res == simdjson::SUCCESS;
+        assert(ok == pj->isValid());
+    } else {
+        std::cerr << "failure during memory allocation " << std::endl;
+    }
+    return pj;
+}
+
+
 static bool simdjsonphp::isvalid(std::string p) /* {{{ */ {
-    ParsedJson pj = build_parsed_json(p);
-    return pj.isValid();
+    ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(p.data()), p.length(), true);
+    bool isvalid = pj->isValid();
+    delete pj;
+    return isvalid;
 }
 
 /* }}} */
 
-bool cplus_isvalid(const char *json) /* {{{ */ {
+bool cplus_simdjson_isvalid(const char *json) /* {{{ */ {
     return simdjsonphp::isvalid(json);
 }
 
 /* }}} */
 
+void* cplus_simdjson_resource(const char *json, void *return_pj, u_short depth) /* {{{ */ {
+    ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
+    if (!pj->isValid()) {
+        delete pj;
+        return nullptr;
+    }
+    ParsedJson::iterator *pjh = new  ParsedJson::iterator(*pj);
+    return_pj = reinterpret_cast<void *>(pj);
+    return reinterpret_cast<void *>(pjh);
+}
+
+/* }}} */
+
+void cplus_simdjson_dtor(void *handle, u_short type) /* {{{ */ {
+
+    if(SIMDJSON_RESOUCE_PJH_TYPE == type) {
+        ParsedJson::iterator *pjh = reinterpret_cast<ParsedJson::iterator *>(handle);
+        delete pjh;
+    } else if(SIMDJSON_RESOUCE_PJ_TYPE == type) {
+        ParsedJson *pj = reinterpret_cast<ParsedJson *>(handle);
+        delete pj;
+    }
+
+}
+
+/* }}} */
 static void simdjsonphp::parse(std::string p, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
-    ParsedJson pj = build_parsed_json(p, depth);
-    if (!pj.isValid()) {
+    ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(p.data()), p.length(), true, depth);
+    if (!pj->isValid()) {
+        delete pj;
         return;
     }
-    ParsedJson::iterator pjh(pj);
+    ParsedJson::iterator pjh(*pj);
     if (assoc) {
         *return_value = simdjsonphp::make_array(pjh);
     } else {
         *return_value = simdjsonphp::make_object(pjh);
     }
+    delete pj;
 }
 
 /* }}} */
 
-void cplus_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
+void cplus_simdjson_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
     simdjsonphp::parse(json, return_value, assoc, depth);
 }
 
@@ -177,7 +223,7 @@ static zval simdjsonphp::make_object(ParsedJson::iterator &pjh) /* {{{ */ {
 
 
 
-static bool cplus_find_node(const char *json, const char *key, ParsedJson::iterator &pjh) /* {{{ */ {
+static bool cplus_find_node(const char *key, ParsedJson::iterator &pjh) /* {{{ */ {
 
     char *pkey = estrdup(key);
     char const *seps = "\t";
@@ -231,41 +277,81 @@ static bool cplus_find_node(const char *json, const char *key, ParsedJson::itera
 
 /* }}} */
 
-void cplus_fastget(const char *json, const char *key, zval *return_value, unsigned char assoc) /* {{{ */ {
+void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
 
-    ParsedJson pj = build_parsed_json(json);
-    if (!pj.isValid()) {
+    ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
+    if (!pj->isValid()) {
+        delete pj;
         return;
     }
-
-    ParsedJson::iterator pjh(pj);
-    bool is_found = cplus_find_node(json, key, pjh);
-
+    ParsedJson::iterator pjh(*pj);
+    bool is_found = cplus_find_node(key, pjh);
     if(!is_found) {
-        return;
+        goto _return_null;
     }
-
     if (assoc) {
         *return_value = simdjsonphp::make_array(pjh);
     } else {
         *return_value = simdjsonphp::make_object(pjh);
     }
+
+    _return_null:
+    delete pj;
+
 }
 
 /* }}} */
 
-u_short cplus_key_exists(const char *json, const char *key) /* {{{ */ {
+void cplus_simdjson_key_value_pjh(void *pjh, const char *key, zval *return_value, unsigned char assoc) /* {{{ */ {
 
-    ParsedJson pj = build_parsed_json(json);
-    if (!pj.isValid()) {
+    ParsedJson::iterator *pjh_v = reinterpret_cast<ParsedJson::iterator *>(pjh);
+    while (pjh_v->up()) {}
+    bool is_found = cplus_find_node(key, *pjh_v);
+    if(!is_found) {
+        return;
+    }
+    if (assoc) {
+        *return_value = simdjsonphp::make_array(*pjh_v);
+    } else {
+        *return_value = simdjsonphp::make_object(*pjh_v);
+    }
+
+}
+
+/* }}} */
+
+u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short depth) /* {{{ */ {
+
+    ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
+    if (!pj->isValid()) {
+        delete pj;
         return SIMDJSON_PARSE_FAIL;
     }
-    ParsedJson::iterator pjh(pj);
-    bool is_found = cplus_find_node(json, key, pjh);
+    ParsedJson::iterator pjh(*pj);
+    bool is_found = cplus_find_node(key, pjh);
+    delete pj;
     if (is_found) {
         return SIMDJSON_PARSE_KEY_EXISTS;
+    } else {
+        return SIMDJSON_PARSE_KEY_NOEXISTS;
     }
-    return SIMDJSON_PARSE_KEY_NOEXISTS;
+
+}
+
+/* }}} */
+
+
+u_short cplus_simdjson_key_exists_pjh(void *pjh, const char *key) /* {{{ */ {
+
+    ParsedJson::iterator *pjh_v = reinterpret_cast<ParsedJson::iterator *>(pjh);
+    while (pjh_v->up()) {}
+    bool is_found = cplus_find_node(key, *pjh_v);
+    if (is_found) {
+        return SIMDJSON_PARSE_KEY_EXISTS;
+    } else {
+        return SIMDJSON_PARSE_KEY_NOEXISTS;
+    }
+
 }
 
 /* }}} */

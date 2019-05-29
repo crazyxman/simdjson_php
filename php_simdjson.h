@@ -23,6 +23,11 @@ extern zend_module_entry simdjson_module_entry;
 #define SIMDJSON_PARSE_KEY_EXISTS             2
 #define SIMDJSON_PARSE_KEY_NOEXISTS           3
 
+#define SIMDJSON_PARSE_DEFAULT_DEPTH          512
+
+#define SIMDJSON_RESOUCE_PJH_TYPE             3
+#define SIMDJSON_RESOUCE_PJ_TYPE              4
+
 
 extern PHPAPI void php_var_dump(zval **struc, int level);
 extern PHPAPI void php_debug_zval_dump(zval **struc, int level);
