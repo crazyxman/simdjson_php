@@ -11,7 +11,7 @@
   +----------------------------------------------------------------------+
 */
 
-#ifdef __AVX2__
+
 
 #define SIMDJSON_NODE_TYPE_STRING       '"'
 #define SIMDJSON_NODE_TYPE_DOUBLE       'd'
@@ -28,9 +28,9 @@ namespace simdjsonphp {
 
     static void parse(std::string p, zval *return_value, unsigned char assoc, u_short depth);
 
-    static zval make_array(ParsedJson::iterator &pj);
+    static zval make_array(simdjson::ParsedJson::Iterator &pj);
 
-    static zval make_object(ParsedJson::iterator &pj);
+    static zval make_object(simdjson::ParsedJson::Iterator &pj);
 
 }
 
@@ -58,7 +58,7 @@ void cplus_simdjson_dtor(void *handle, u_short type);
 }
 #endif
 
-#endif
+
 
 /*
  * Local variables:

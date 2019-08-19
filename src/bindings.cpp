@@ -11,7 +11,6 @@
   +----------------------------------------------------------------------+
 */
 
-#ifdef __AVX2__
 
 #include "php.h"
 #include "php_simdjson.h"
@@ -21,13 +20,11 @@
 
 
 WARN_UNUSED
-ParsedJson* build_parsed_json_cust(const uint8_t *buf, size_t len, bool reallocifneeded, u_short depth = DEFAULTMAXDEPTH) {
-    ParsedJson *pj = new ParsedJson();
-    bool ok = pj->allocateCapacity(len, depth);
-    if(ok) {
-        int res = json_parse(buf, len, *pj, reallocifneeded);
-        ok = res == simdjson::SUCCESS;
-        assert(ok == pj->isValid());
+simdjson::ParsedJson* build_parsed_json_cust(const uint8_t *buf, size_t len, bool realloc_if_needed, u_short depth = DEFAULT_MAX_DEPTH) {
+    simdjson::ParsedJson *pj = new simdjson::ParsedJson();
+    bool ok = pj->allocate_capacity(len, depth);
+    if (ok) {
+        simdjson::json_parse(buf, len, *pj, realloc_if_needed);
     } else {
         std::cerr << "failure during memory allocation " << std::endl;
     }
@@ -36,8 +33,8 @@ ParsedJson* build_parsed_json_cust(const uint8_t *buf, size_t len, bool realloci
 
 
 static bool simdjsonphp::isvalid(std::string p) /* {{{ */ {
-    ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(p.data()), p.length(), true);
-    bool isvalid = pj->isValid();
+    simdjson::ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(p.data()), p.length(), true);
+    bool isvalid = pj->is_valid();
     delete pj;
     return isvalid;
 }
@@ -51,12 +48,12 @@ bool cplus_simdjson_isvalid(const char *json) /* {{{ */ {
 /* }}} */
 
 void* cplus_simdjson_resource(const char *json, void *return_pj, u_short depth) /* {{{ */ {
-    ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
-    if (!pj->isValid()) {
+    simdjson::ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
+    if (!pj->is_valid()) {
         delete pj;
         return nullptr;
     }
-    ParsedJson::iterator *pjh = new  ParsedJson::iterator(*pj);
+    simdjson::ParsedJson::Iterator *pjh = new  simdjson::ParsedJson::Iterator(*pj);
     return_pj = reinterpret_cast<void *>(pj);
     return reinterpret_cast<void *>(pjh);
 }
@@ -66,10 +63,10 @@ void* cplus_simdjson_resource(const char *json, void *return_pj, u_short depth) 
 void cplus_simdjson_dtor(void *handle, u_short type) /* {{{ */ {
 
     if(SIMDJSON_RESOUCE_PJH_TYPE == type) {
-        ParsedJson::iterator *pjh = reinterpret_cast<ParsedJson::iterator *>(handle);
+        simdjson::ParsedJson::Iterator *pjh = reinterpret_cast<simdjson::ParsedJson::Iterator *>(handle);
         delete pjh;
     } else if(SIMDJSON_RESOUCE_PJ_TYPE == type) {
-        ParsedJson *pj = reinterpret_cast<ParsedJson *>(handle);
+        simdjson::ParsedJson *pj = reinterpret_cast<simdjson::ParsedJson *>(handle);
         delete pj;
     }
 
@@ -77,12 +74,12 @@ void cplus_simdjson_dtor(void *handle, u_short type) /* {{{ */ {
 
 /* }}} */
 static void simdjsonphp::parse(std::string p, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
-    ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(p.data()), p.length(), true, depth);
-    if (!pj->isValid()) {
+    simdjson::ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(p.data()), p.length(), true, depth);
+    if (!pj->is_valid()) {
         delete pj;
         return;
     }
-    ParsedJson::iterator pjh(*pj);
+    simdjson::ParsedJson::Iterator pjh(*pj);
     if (assoc) {
         *return_value = simdjsonphp::make_array(pjh);
     } else {
@@ -99,7 +96,7 @@ void cplus_simdjson_parse(const char *json, zval *return_value, unsigned char as
 
 /* }}} */
 
-static zval simdjsonphp::make_array(ParsedJson::iterator &pjh) /* {{{ */ {
+static zval simdjsonphp::make_array(simdjson::ParsedJson::Iterator &pjh) /* {{{ */ {
     zval v;
     switch (pjh.get_type()) {
         //ASCII sort
@@ -159,7 +156,7 @@ static zval simdjsonphp::make_array(ParsedJson::iterator &pjh) /* {{{ */ {
 
 /* }}} */
 
-static zval simdjsonphp::make_object(ParsedJson::iterator &pjh) /* {{{ */ {
+static zval simdjsonphp::make_object(simdjson::ParsedJson::Iterator &pjh) /* {{{ */ {
     zval v;
     switch (pjh.get_type()) {
         //ASCII sort
@@ -223,7 +220,7 @@ static zval simdjsonphp::make_object(ParsedJson::iterator &pjh) /* {{{ */ {
 
 
 
-static bool cplus_find_node(const char *key, ParsedJson::iterator &pjh) /* {{{ */ {
+static bool cplus_find_node(const char *key, simdjson::ParsedJson::Iterator &pjh) /* {{{ */ {
 
     char *pkey = estrdup(key);
     char const *seps = "\t";
@@ -279,12 +276,12 @@ static bool cplus_find_node(const char *key, ParsedJson::iterator &pjh) /* {{{ *
 
 void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
 
-    ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
-    if (!pj->isValid()) {
+    simdjson::ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
+    if (!pj->is_valid()) {
         delete pj;
         return;
     }
-    ParsedJson::iterator pjh(*pj);
+    simdjson::ParsedJson::Iterator pjh(*pj);
     bool is_found = cplus_find_node(key, pjh);
     if(!is_found) {
         goto _return_null;
@@ -304,7 +301,7 @@ void cplus_simdjson_key_value(const char *json, const char *key, zval *return_va
 
 void cplus_simdjson_key_value_pjh(void *pjh, const char *key, zval *return_value, unsigned char assoc) /* {{{ */ {
 
-    ParsedJson::iterator *pjh_v = reinterpret_cast<ParsedJson::iterator *>(pjh);
+    simdjson::ParsedJson::Iterator *pjh_v = reinterpret_cast<simdjson::ParsedJson::Iterator *>(pjh);
     while (pjh_v->up()) {}
     bool is_found = cplus_find_node(key, *pjh_v);
     if(!is_found) {
@@ -322,12 +319,12 @@ void cplus_simdjson_key_value_pjh(void *pjh, const char *key, zval *return_value
 
 u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short depth) /* {{{ */ {
 
-    ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
-    if (!pj->isValid()) {
+    simdjson::ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
+    if (!pj->is_valid()) {
         delete pj;
         return SIMDJSON_PARSE_FAIL;
     }
-    ParsedJson::iterator pjh(*pj);
+    simdjson::ParsedJson::Iterator pjh(*pj);
     bool is_found = cplus_find_node(key, pjh);
     delete pj;
     if (is_found) {
@@ -343,7 +340,7 @@ u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short dep
 
 u_short cplus_simdjson_key_exists_pjh(void *pjh, const char *key) /* {{{ */ {
 
-    ParsedJson::iterator *pjh_v = reinterpret_cast<ParsedJson::iterator *>(pjh);
+    simdjson::ParsedJson::Iterator *pjh_v = reinterpret_cast<simdjson::ParsedJson::Iterator *>(pjh);
     while (pjh_v->up()) {}
     bool is_found = cplus_find_node(key, *pjh_v);
     if (is_found) {
@@ -356,7 +353,6 @@ u_short cplus_simdjson_key_exists_pjh(void *pjh, const char *key) /* {{{ */ {
 
 /* }}} */
 
-#endif
 
 /*
  * Local variables:
