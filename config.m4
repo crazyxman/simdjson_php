@@ -6,7 +6,6 @@ if test "$PHP_SIMDJSON" != "no"; then
   CXXFLAGS=" -march=native -O2 -std=c++17 "
   PHP_REQUIRE_CXX()
 
-
   AC_MSG_CHECKING([PHP version])
 
   tmp_version=$PHP_VERSION
@@ -36,7 +35,7 @@ if test "$PHP_SIMDJSON" != "no"; then
   fi
 
   PHP_NEW_EXTENSION(simdjson,
-    simdjson.c                          \
+    simdjson.cpp                        \
     src/bindings.cpp                    \
     src/simdjson.cpp,
   $ext_shared)

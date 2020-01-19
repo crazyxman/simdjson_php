@@ -11,7 +11,7 @@
   +----------------------------------------------------------------------+
 */
 
-
+#include "simdjson.h"
 
 #define SIMDJSON_NODE_TYPE_STRING       '"'
 #define SIMDJSON_NODE_TYPE_DOUBLE       'd'
@@ -21,6 +21,7 @@
 #define SIMDJSON_NODE_TYPE_TRUE         't'
 #define SIMDJSON_NODE_TYPE_ARRAY        '['
 #define SIMDJSON_NODE_TYPE_OBJECT       '{'
+
 
 namespace simdjsonphp {
 
@@ -42,15 +43,16 @@ bool cplus_simdjson_isvalid(const char *json);
 
 void cplus_simdjson_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth);
 
-void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth);
+void
+cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth);
 
-void cplus_simdjson_key_value_pjh(void * pjh, const char *key, zval *return_value, unsigned char assoc);
+void cplus_simdjson_key_value_pjh(void *pjh, const char *key, zval *return_value, unsigned char assoc);
 
 u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short depth);
 
 u_short cplus_simdjson_key_exists_pjh(void *pjh, const char *key);
 
-void* cplus_simdjson_resource(const char *json, void *pj, u_short depth);
+void *cplus_simdjson_resource(const char *json, void *pj, u_short depth);
 
 void cplus_simdjson_dtor(void *handle, u_short type);
 

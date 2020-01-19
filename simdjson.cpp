@@ -53,7 +53,7 @@ ZEND_END_ARG_INFO()
 static int simdjson_pjh_resource_type;
 static int simdjson_pj_resource_type;
 
-extern unsigned char cplus_simdjson_isvalid(const char *json);
+extern bool cplus_simdjson_isvalid(const char *json);
 
 extern void cplus_simdjson_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth);
 
