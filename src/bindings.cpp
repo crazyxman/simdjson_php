@@ -20,7 +20,7 @@
 
 
 WARN_UNUSED
-simdjson::ParsedJson* build_parsed_json_cust(const uint8_t *buf, size_t len, bool realloc_if_needed, u_short depth = DEFAULT_MAX_DEPTH) {
+simdjson::ParsedJson* build_parsed_json_cust(const uint8_t *buf, size_t len, bool realloc_if_needed, u_short depth = simdjson::DEFAULT_MAX_DEPTH) {
     simdjson::ParsedJson *pj = new simdjson::ParsedJson();
     bool ok = pj->allocate_capacity(len, depth);
     if (ok) {
