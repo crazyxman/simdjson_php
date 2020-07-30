@@ -32,19 +32,19 @@ $ php benchmark/vendor/bin/phpbench run --report=table
 PhpBench @git_tag@. Running benchmarks.
 Using configuration file: /home/skeil/data/sources/sandrokeil/simdjson_php/phpbench.json.dist
 
-\SimdjsonBench\KeyValueBench
-
-    jsonDecode..............................R2 I3 [μ Mo]/r: 0.00960 0.00949 (ms) [μSD μRSD]/r: 0.000ms 1.86%
-    simdjson................................R1 I2 [μ Mo]/r: 0.00360 0.00360 (ms) [μSD μRSD]/r: 0.000ms 0.00%
-
-2 subjects, 10 iterations, 10 revs, 0 rejects, 0 failures, 0 warnings
-(best [mean mode] worst) = 3.600 [6.600 6.543] 3.600 (μs)
-⅀T: 66.000μs μSD/r 0.089μs μRSD/r: 0.932%
-suite: 1343d187ed9001f1c88f28338b0ad07bc4fc1b44, date: 2020-07-28, stime: 21:10:10
-+---------------+------------+----------+-----------+-----------+-------+
-| benchmark     | subject    | mem_peak | mean      | best      | diff  |
-+---------------+------------+----------+-----------+-----------+-------+
-| KeyValueBench | simdjson   | 877,352b | 0.00360ms | 0.00360ms | 1.00x |
-| KeyValueBench | jsonDecode | 877,392b | 0.00960ms | 0.00940ms | 2.67x |
-+---------------+------------+----------+-----------+-----------+-------+
+7 subjects, 35 iterations, 35 revs, 0 rejects, 0 failures, 0 warnings
+(best [mean mode] worst) = 3.000 [4.394 4.390] 3.000 (μs)
+⅀T: 153.800μs μSD/r 0.082μs μRSD/r: 1.806%
+suite: 1343d1aa6c27e67a8914ed5d1a02238284fcfce5, date: 2020-07-30, stime: 14:53:00
++---------------+-----------------------------+----------+-----------+-----------+-------+
+| benchmark     | subject                     | mem_peak | mean      | best      | diff  |
++---------------+-----------------------------+----------+-----------+-----------+-------+
+| KeyValueBench | simdjsonIntViaObject        | 884,552b | 0.00300ms | 0.00300ms | 1.00x |
+| KeyValueBench | simdjsonIntViaArray         | 884,552b | 0.00300ms | 0.00300ms | 1.00x |
+| KeyValueBench | simdjsonDeepStringViaObject | 884,560b | 0.00308ms | 0.00300ms | 1.03x |
+| KeyValueBench | simdjsonDeepStringViaArray  | 884,560b | 0.00312ms | 0.00300ms | 1.04x |
+| KeyValueBench | simdjsonArray               | 884,544b | 0.00408ms | 0.00400ms | 1.36x |
+| KeyValueBench | simdjsonObject              | 884,544b | 0.00468ms | 0.00460ms | 1.56x |
+| KeyValueBench | jsonDecode                  | 884,544b | 0.00980ms | 0.00960ms | 3.27x |
++---------------+-----------------------------+----------+-----------+-----------+-------+
 ```

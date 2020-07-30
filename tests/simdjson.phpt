@@ -38,9 +38,12 @@ $json = <<<EOF
    "code" : 201
  }
 EOF;
-$value = \simdjson_key_value($json, "result\t0\tHello3", true);
+$value = \simdjson_key_value($json, "result/0/Hello3", false);
+echo $value;
+
+$value = \simdjson_key_value($json, "result/0/Hello3", true);
 echo $value;
 
 ?>
 --EXPECT--
-World3
+World3World3

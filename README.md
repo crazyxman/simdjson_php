@@ -47,15 +47,15 @@ $parsedJSON = simdjson_decode($jsonString, true, 512); //return array|object|nul
 }
 */
 
-//note. "\t" is a separator. It must be a control character. Can be used as the "key" of the object and the "index" of the array
-//E.g. "Image\tThumbnail\tUrl" is ok. 'Image\tThumbnail\tUrl' is wrong
+//note. "/" is a separator. Can be used as the "key" of the object and the "index" of the array
+//E.g. "Image/Thumbnail/Url" is ok.
 
 
 //get the value of a "key" in a json string
-$value = simdjson_key_value($jsonString, "Image\tThumbnail\tUrl");
+$value = simdjson_key_value($jsonString, "Image/Thumbnail/Url");
 var_dump($value); // string(38) "http://www.example.com/image/481989943"
 
-$value = simdjson_key_value($jsonString, "Image\tIDs\t4", true);
+$value = simdjson_key_value($jsonString, "Image/IDs/4", true);
 var_dump($value); 
 /*
 array(1) {
@@ -67,10 +67,10 @@ array(1) {
 //Get the parsed json resource
 $resource = simdjson_resource($jsonString);
 //get the value of a "key" in 'resource'
-$value = simdjson_key_value($resource, "Image\tThumbnail\tUrl");
+$value = simdjson_key_value($resource, "Image/Thumbnail/Url");
 var_dump($value); // string(38) "http://www.example.com/image/481989943"
 
-$value = simdjson_key_value($resource, "Image\tIDs\t4", true);
+$value = simdjson_key_value($resource, "Image/IDs/4", true);
 var_dump($value); 
 /*
 array(1) {
@@ -80,7 +80,7 @@ array(1) {
 */
 
 //check if the key exists. return true|false|null. "true" exists, "false" does not exist, "null" string is not a standard json
-$res = simdjson_key_exists($jsonString, "Image\tIDs\t1");
+$res = simdjson_key_exists($jsonString, "Image/IDs/1");
 var_dump($res) //bool(true)
 
 ```

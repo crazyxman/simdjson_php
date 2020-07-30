@@ -33,7 +33,7 @@ class KeyValueBench
   "result" : [ 
     { 
       "_key" : "70614", 
-      "_id" : "products/70614", 
+      "_id" : "products/70614",
       "_rev" : "_al3hU1K---", 
       "Hello3" : "World3" 
     }, 
@@ -81,11 +81,71 @@ EOF;
     /**
      * @Subject()
      */
-    public function simdjson()
+    public function simdjsonDeepStringViaObject()
     {
-        $value = \simdjson_key_value($this->json, "result\t0\tHello3", true);
+        $value = \simdjson_key_value($this->json, "result/0/Hello3", false);
 
         if ('World3' !== $value) {
+            throw new \RuntimeException('error');
+        }
+    }
+
+    /**
+     * @Subject()
+     */
+    public function simdjsonDeepStringViaArray()
+    {
+        $value = \simdjson_key_value($this->json, "result/0/Hello3", true);
+
+        if ('World3' !== $value) {
+            throw new \RuntimeException('error');
+        }
+    }
+
+    /**
+     * @Subject()
+     */
+    public function simdjsonIntViaObject()
+    {
+        $value = \simdjson_key_value($this->json, "code", false);
+
+        if (201 !== $value) {
+            throw new \RuntimeException('error');
+        }
+    }
+
+    /**
+     * @Subject()
+     */
+    public function simdjsonIntViaArray()
+    {
+        $value = \simdjson_key_value($this->json, "code", true);
+
+        if (201 !== $value) {
+            throw new \RuntimeException('error');
+        }
+    }
+
+    /**
+     * @Subject()
+     */
+    public function simdjsonArray()
+    {
+        $value = \simdjson_key_value($this->json, "result", true);
+
+        if ('World3' !== $value[0]['Hello3']) {
+            throw new \RuntimeException('error');
+        }
+    }
+
+    /**
+     * @Subject()
+     */
+    public function simdjsonObject()
+    {
+        $value = \simdjson_key_value($this->json, "result", false);
+
+        if ('World3' !== $value[0]->Hello3) {
             throw new \RuntimeException('error');
         }
     }

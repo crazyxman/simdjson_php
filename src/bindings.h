@@ -29,10 +29,11 @@ namespace simdjsonphp {
 
     static void parse(std::string p, zval *return_value, unsigned char assoc, u_short depth);
 
-    static zval make_array(simdjson::ParsedJson::Iterator &pj);
+//    static zval make_array(simdjson::simdjson_result<simdjson::dom::element> result);
+    static zval make_array(simdjson::dom::element element);
 
-    static zval make_object(simdjson::ParsedJson::Iterator &pj);
-
+//    static zval make_object(simdjson::simdjson_result<simdjson::dom::element> element);
+    static zval make_object(simdjson::dom::element element);
 }
 
 #ifdef __cplusplus
