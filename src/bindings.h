@@ -27,7 +27,7 @@ namespace simdjsonphp {
 
     static bool is_valid(std::string p);
 
-    static void parse(std::string p, zval *return_value, unsigned char assoc, u_short depth);
+    static void parse(const std::string& p, zval *return_value, unsigned char assoc, u_short depth);
 
 //    static zval make_array(simdjson::simdjson_result<simdjson::dom::element> result);
     static zval make_array(simdjson::dom::element element);

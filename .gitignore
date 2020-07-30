@@ -29,9 +29,11 @@ modules/
 php_test_results_*.txt
 tests/*
 !tests/*.phpt
+!tests/_files/
 *~
 configure.ac
 /cmake-*
 /run-php
 benchmark/vendor
 composer.lock
+.idea

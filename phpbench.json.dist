@@ -8,12 +8,14 @@
       "cols": [
         "benchmark",
         "subject",
+        "groups",
         "mem_peak",
         "mean",
         "best",
         "diff"
       ],
       "sort": {
+        "groups": "asc",
         "mean": "asc"
       }
     }

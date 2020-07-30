@@ -76,23 +76,18 @@ void cplus_simdjson_dtor(void *handle, u_short type) /* {{{ */ {
         simdjson::ParsedJson *pj = reinterpret_cast<simdjson::ParsedJson *>(handle);
         delete pj;
     }
-
 }
 
 /* }}} */
-static void simdjsonphp::parse(std::string p, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
-//    simdjson::ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(p.data()), p.length(), true, depth);
-//    if (!pj->is_valid()) {
-//        delete pj;
-//        return;
-//    }
-//    simdjson::ParsedJson::Iterator pjh(*pj);
-//    if (assoc) {
-//        *return_value = simdjsonphp::make_array(pjh);
-//    } else {
-//        *return_value = simdjsonphp::make_object(pjh);
-//    }
-//    delete pj;
+static void simdjsonphp::parse(const std::string& p, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
+
+    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(p.data()), p.length(), true, depth);
+
+    if (assoc) {
+        *return_value = simdjsonphp::make_array(doc);
+    } else {
+        *return_value = simdjsonphp::make_object(doc);
+    }
 }
 
 /* }}} */
@@ -103,7 +98,6 @@ void cplus_simdjson_parse(const char *json, zval *return_value, unsigned char as
 
 /* }}} */
 
-//static zval simdjsonphp::make_array(simdjson::simdjson_result<simdjson::dom::element> result) /* {{{ */ {
 static zval simdjsonphp::make_array(simdjson::dom::element element) /* {{{ */ {
     zval v;
 
@@ -134,7 +128,6 @@ static zval simdjsonphp::make_array(simdjson::dom::element element) /* {{{ */ {
             for (simdjson::dom::element child : simdjson::dom::array(element)) {
                 zval value = simdjsonphp::make_array(child);
                 add_next_index_zval(&arr, &value);
-//                zval_ptr_dtor(&value);
             }
 
             v = arr;
@@ -146,7 +139,6 @@ static zval simdjsonphp::make_array(simdjson::dom::element element) /* {{{ */ {
             for (simdjson::dom::key_value_pair field : simdjson::dom::object(element)) {
                 zval value = simdjsonphp::make_array(field.value);
                 add_assoc_zval_ex(&obj, field.key.data(), strlen(field.key.data()), &value);
-//                zval_ptr_dtor(&value);
             }
             v = obj;
             break;
@@ -154,65 +146,11 @@ static zval simdjsonphp::make_array(simdjson::dom::element element) /* {{{ */ {
             break;
     }
 
-//    switch (pjh.get_type()) {
-//        //ASCII sort
-//        case SIMDJSON_NODE_TYPE_STRING :
-//            ZVAL_STRING(&v, pjh.get_string());
-//            break;
-//        case SIMDJSON_NODE_TYPE_DOUBLE : ZVAL_DOUBLE(&v, pjh.get_double());
-//            break;
-//        case SIMDJSON_NODE_TYPE_FALSE:
-//            ZVAL_FALSE(&v);
-//            break;
-//        case SIMDJSON_NODE_TYPE_LONG : ZVAL_LONG(&v, pjh.get_integer());
-//            break;
-//        case SIMDJSON_NODE_TYPE_NULL:
-//            ZVAL_NULL(&v);
-//            break;
-//        case SIMDJSON_NODE_TYPE_TRUE:
-//            ZVAL_TRUE(&v);
-//            break;
-//        case SIMDJSON_NODE_TYPE_ARRAY :
-//            zval arr;
-//            array_init(&arr);
-//            if (pjh.down()) {
-//                zval value = simdjsonphp::make_array(pjh);
-//                add_next_index_zval(&arr, &value);
-//                while (pjh.next()) {
-//                    zval value = simdjsonphp::make_array(pjh);
-//                    add_next_index_zval(&arr, &value);
-//                }
-//                pjh.up();
-//            }
-//            v = arr;
-//            break;
-//        case SIMDJSON_NODE_TYPE_OBJECT :
-//            zval obj;
-//            array_init(&obj);
-//            if (pjh.down()) {
-//                const char *key = pjh.get_string();
-//                pjh.next();
-//                zval value = simdjsonphp::make_array(pjh);
-//                add_assoc_zval(&obj, key, &value);
-//                while (pjh.next()) {
-//                    key = pjh.get_string();
-//                    pjh.next();
-//                    zval value = simdjsonphp::make_array(pjh);
-//                    add_assoc_zval(&obj, key, &value);
-//                }
-//                pjh.up();
-//            }
-//            v = obj;
-//            break;
-//        default:
-//            break;
-//    }
     return v;
 }
 
 /* }}} */
 
-//static zval simdjsonphp::make_object(simdjson::simdjson_result<simdjson::dom::element> element) /* {{{ */ {
 static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
     zval v;
 
@@ -243,7 +181,6 @@ static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
             for (simdjson::dom::element child : simdjson::dom::array(element)) {
                 zval value = simdjsonphp::make_object(child);
                 add_next_index_zval(&arr, &value);
-//                zval_ptr_dtor(&value);
             }
 
             v = arr;
@@ -255,7 +192,6 @@ static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
             for (simdjson::dom::key_value_pair field : simdjson::dom::object(element)) {
                 zval value = simdjsonphp::make_object(field.value);
                 add_property_zval_ex(&obj, field.key.data(), strlen(field.key.data()), &value);
-//                zval_ptr_dtor(&value);
             }
             v = obj;
             break;
@@ -266,8 +202,6 @@ static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
 }
 
 /* }}} */
-
-
 
 static bool cplus_find_node(const char *key, simdjson::ParsedJson::Iterator &pjh) /* {{{ */ {
 

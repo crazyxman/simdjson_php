@@ -16,9 +16,9 @@ if (!extension_loaded('simdjson')) {
  * @Warmup(3)
  * @OutputTimeUnit("milliseconds", precision=5)
  * @BeforeMethods({"init"})
- * @Groups({"key_value"})
+ * @Groups({"decode"})
  */
-class KeyValueBench
+class DecodeBench
 {
 
     /**
@@ -69,7 +69,7 @@ EOF;
     /**
      * @Subject()
      */
-    public function jsonDecode(): void
+    public function jsonDecodeAssoc(): void
     {
         $data = json_decode($this->json, true);
 
@@ -81,11 +81,11 @@ EOF;
     /**
      * @Subject()
      */
-    public function simdjsonDeepString()
+    public function jsonDecode(): void
     {
-        $value = \simdjson_key_value($this->json, "result/0/Hello3", false);
+        $data = json_decode($this->json, false);
 
-        if ('World3' !== $value) {
+        if ('World3' !== $data->result[0]->Hello3) {
             throw new \RuntimeException('error');
         }
     }
@@ -93,11 +93,11 @@ EOF;
     /**
      * @Subject()
      */
-    public function simdjsonDeepStringAssoc()
+    public function simdjsonDecodeAssoc()
     {
-        $value = \simdjson_key_value($this->json, "result/0/Hello3", true);
+        $data = \simdjson_decode($this->json, true);
 
-        if ('World3' !== $value) {
+        if ('World3' !== $data['result'][0]['Hello3']) {
             throw new \RuntimeException('error');
         }
     }
@@ -105,48 +105,13 @@ EOF;
     /**
      * @Subject()
      */
-    public function simdjsonInt()
+    public function simdjsonDecode()
     {
-        $value = \simdjson_key_value($this->json, "code", false);
+        $data = \simdjson_decode($this->json, false);
 
-        if (201 !== $value) {
+        if ('World3' !== $data->result[0]->Hello3) {
             throw new \RuntimeException('error');
         }
     }
 
-    /**
-     * @Subject()
-     */
-    public function simdjsonIntAssoc()
-    {
-        $value = \simdjson_key_value($this->json, "code", true);
-
-        if (201 !== $value) {
-            throw new \RuntimeException('error');
-        }
-    }
-
-    /**
-     * @Subject()
-     */
-    public function simdjsonArray()
-    {
-        $value = \simdjson_key_value($this->json, "result", true);
-
-        if ('World3' !== $value[0]['Hello3']) {
-            throw new \RuntimeException('error');
-        }
-    }
-
-    /**
-     * @Subject()
-     */
-    public function simdjsonObject()
-    {
-        $value = \simdjson_key_value($this->json, "result", false);
-
-        if ('World3' !== $value[0]->Hello3) {
-            throw new \RuntimeException('error');
-        }
-    }
 }
