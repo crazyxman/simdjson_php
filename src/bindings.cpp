@@ -290,20 +290,18 @@ void cplus_simdjson_key_value_pjh(void *pjh, const char *key, zval *return_value
 
 u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short depth) /* {{{ */ {
 
-//    simdjson::ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
-//    if (!pj->is_valid()) {
-//        delete pj;
-//        return SIMDJSON_PARSE_FAIL;
-//    }
-//    simdjson::ParsedJson::Iterator pjh(*pj);
-//    bool is_found = cplus_find_node(key, pjh);
-//    delete pj;
-//    if (is_found) {
-//        return SIMDJSON_PARSE_KEY_EXISTS;
-//    } else {
-//        return SIMDJSON_PARSE_KEY_NOEXISTS;
-//    }
+    simdjson::dom::element doc;
+    auto error = parser.parse(reinterpret_cast<const uint8_t *>(json), strlen(json)).get(doc);
 
+    if (error) {
+        return SIMDJSON_PARSE_FAIL;
+    }
+    error = doc.at(key).error();
+
+    if (error) {
+        return SIMDJSON_PARSE_KEY_NOEXISTS;
+    }
+    return SIMDJSON_PARSE_KEY_EXISTS;
 }
 
 /* }}} */
