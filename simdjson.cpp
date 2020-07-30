@@ -24,7 +24,7 @@
 
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
 
-ZEND_BEGIN_ARG_INFO(simdjson_isvalid_arginfo, 1)
+ZEND_BEGIN_ARG_INFO(simdjson_is_valid_arginfo, 1)
         ZEND_ARG_INFO(0, json)
 ZEND_END_ARG_INFO()
 
@@ -53,7 +53,7 @@ ZEND_END_ARG_INFO()
 static int simdjson_pjh_resource_type;
 static int simdjson_pj_resource_type;
 
-extern bool cplus_simdjson_isvalid(const char *json);
+extern bool cplus_simdjson_is_valid(const char *json);
 
 extern void cplus_simdjson_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth);
 
@@ -69,12 +69,12 @@ extern void *cplus_simdjson_resource(const char *json, void *pj, u_short depth);
 
 extern void cplus_simdjson_dtor(void *handle, u_short type);
 
-PHP_FUNCTION (simdjson_isvalid) {
+PHP_FUNCTION (simdjson_is_valid) {
     zend_string *json = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &json) == FAILURE) {
         return;
     }
-    short is_json = cplus_simdjson_isvalid(ZSTR_VAL(json));
+    short is_json = cplus_simdjson_is_valid(ZSTR_VAL(json));
     ZVAL_BOOL(return_value, is_json);
 }
 
@@ -167,7 +167,7 @@ void simdjson_dtor(zend_resource *res) {
 /* {{{ simdjson_functions[]
 */
 zend_function_entry simdjson_functions[] = {
-    PHP_FE(simdjson_isvalid, simdjson_isvalid_arginfo)
+    PHP_FE(simdjson_is_valid, simdjson_is_valid_arginfo)
     PHP_FE(simdjson_decode, simdjson_decode_arginfo)
     PHP_FE(simdjson_key_value, simdjson_key_value_arginfo)
     PHP_FE(simdjson_key_exists, simdjson_key_exists_arginfo)

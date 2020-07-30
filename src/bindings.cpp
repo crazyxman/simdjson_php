@@ -36,19 +36,20 @@ simdjson::dom::element build_parsed_json_cust(const uint8_t *buf, size_t len, bo
 }
 
 
-static bool simdjsonphp::isvalid(std::string p) /* {{{ */ {
-//    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(p.data()), p.length(), true);
-//
-//    doc.
-//    bool isvalid = pj->is_valid();
-//    delete pj;
-//    return isvalid;
+static bool simdjsonphp::is_valid(std::string p) /* {{{ */ {
+    simdjson::dom::element doc;
+    auto error = parser.parse(p).get(doc);
+
+    if (error) {
+        return false;
+    }
+    return true;
 }
 
 /* }}} */
 
-bool cplus_simdjson_isvalid(const char *json) /* {{{ */ {
-    return simdjsonphp::isvalid(json);
+bool cplus_simdjson_is_valid(const char *json) /* {{{ */ {
+    return simdjsonphp::is_valid(json);
 }
 
 /* }}} */
