@@ -45,6 +45,11 @@ ZEND_BEGIN_ARG_INFO(simdjson_key_exists_arginfo, 2)
         ZEND_ARG_INFO(0, key)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO(simdjson_key_count_arginfo, 2)
+        ZEND_ARG_INFO(0, json)
+        ZEND_ARG_INFO(0, key)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO(simdjson_resource_arginfo, 1)
         ZEND_ARG_INFO(0, json)
         ZEND_ARG_INFO(0, depth)
@@ -64,6 +69,10 @@ extern void cplus_simdjson_key_value_pjh(void *pjh, const char *key, zval *retur
 extern u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short depth);
 
 extern u_short cplus_simdjson_key_exists_pjh(void *pjh, const char *key);
+
+extern void cplus_simdjson_key_count(const char *json, const char *key, zval *return_value, u_short depth);
+
+extern void cplus_simdjson_key_count_pjh(void *pjh, const char *key, zval *return_value);
 
 extern void *cplus_simdjson_resource(const char *json, void *pj, u_short depth);
 
@@ -105,6 +114,28 @@ PHP_FUNCTION (simdjson_key_value) {
             return;
         }
         cplus_simdjson_key_value_pjh(pjh, ZSTR_VAL(key), return_value, assoc);
+    } else {
+        php_error_docref(NULL, E_WARNING, "expects parameter 1 to be resource or string");
+    }
+
+}
+
+PHP_FUNCTION (simdjson_key_count) {
+
+    zval *json = NULL;
+    zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
+    zend_string *key = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|bl", &json, &key, &depth) == FAILURE) {
+        return;
+    }
+    if (IS_STRING == Z_TYPE_P(json)) {
+        cplus_simdjson_key_count(Z_STRVAL_P(json), ZSTR_VAL(key), return_value, depth + 1);
+    } else if (IS_RESOURCE == Z_TYPE_P(json)) {
+        void *pjh = zend_fetch_resource(Z_RES_P(json), "simdjson_pjh", simdjson_pjh_resource_type);
+        if (NULL == pjh) {
+            return;
+        }
+        cplus_simdjson_key_count_pjh(pjh, ZSTR_VAL(key), return_value);
     } else {
         php_error_docref(NULL, E_WARNING, "expects parameter 1 to be resource or string");
     }
@@ -171,6 +202,7 @@ zend_function_entry simdjson_functions[] = {
     PHP_FE(simdjson_decode, simdjson_decode_arginfo)
     PHP_FE(simdjson_key_value, simdjson_key_value_arginfo)
     PHP_FE(simdjson_key_exists, simdjson_key_exists_arginfo)
+    PHP_FE(simdjson_key_count, simdjson_key_count_arginfo)
     PHP_FE(simdjson_resource, simdjson_resource_arginfo)
     {NULL, NULL, NULL}
 };

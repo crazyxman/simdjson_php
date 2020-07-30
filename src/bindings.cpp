@@ -323,6 +323,39 @@ u_short cplus_simdjson_key_exists_pjh(void *pjh, const char *key) /* {{{ */ {
 /* }}} */
 
 
+void cplus_simdjson_key_count(const char *json, const char *key, zval *return_value, u_short depth) /* {{{ */ {
+
+    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
+    simdjson::dom::element element = doc.at(key);
+
+    zval v;
+
+    switch (element.type()) {
+        //ASCII sort
+        case simdjson::dom::element_type::ARRAY :
+            ZVAL_LONG(&v, uint64_t(simdjson::dom::array(element).size()));
+            break;
+        case simdjson::dom::element_type::OBJECT :
+            ZVAL_LONG(&v, uint64_t(simdjson::dom::object(element).size()));
+            break;
+        default:
+            ZVAL_LONG(&v, 0);
+            break;
+    }
+    *return_value = v;
+}
+
+/* }}} */
+
+void cplus_simdjson_key_count_pjh(void *pjh, const char *key, zval *return_value) /* {{{ */ {
+
+    /*
+    if(!is_found) {
+        return;
+    }*/
+    //*return_value = *pjh_v->size();
+}
+
 /*
  * Local variables:
  * tab-width: 4

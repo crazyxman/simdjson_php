@@ -44,14 +44,17 @@ bool cplus_simdjson_isvalid(const char *json);
 
 void cplus_simdjson_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth);
 
-void
-cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth);
+void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth);
 
 void cplus_simdjson_key_value_pjh(void *pjh, const char *key, zval *return_value, unsigned char assoc);
 
 u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short depth);
 
 u_short cplus_simdjson_key_exists_pjh(void *pjh, const char *key);
+
+void cplus_simdjson_key_count(const char *json, const char *key, zval *return_value, u_short depth);
+
+void cplus_simdjson_key_count_pjh(void *pjh, const char *key, zval *return_value);
 
 void *cplus_simdjson_resource(const char *json, void *pj, u_short depth);
 
