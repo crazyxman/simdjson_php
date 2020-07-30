@@ -18,10 +18,11 @@
 #include "simdjson.h"
 #include "bindings.h"
 
+// see https://github.com/simdjson/simdjson/blob/master/doc/performance.md#reusing-the-parser-for-maximum-efficiency
+simdjson::dom::parser parser;
 
 WARN_UNUSED
 simdjson::dom::element build_parsed_json_cust(const uint8_t *buf, size_t len, bool realloc_if_needed, u_short depth = simdjson::DEFAULT_MAX_DEPTH) {
-    simdjson::dom::parser parser;
     simdjson::dom::element doc;
     simdjson::error_code error = parser.allocate(len, depth);
 
@@ -323,50 +324,13 @@ static bool cplus_find_node(const char *key, simdjson::ParsedJson::Iterator &pjh
 
 void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
 
-//    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
-
-    simdjson::dom::parser parser;
-    simdjson::dom::element doc;
-    simdjson::error_code error = parser.allocate(strlen(json), depth);
-
-    if (error) {
-        std::cerr << "failure during memory allocation " << std::endl;
-    } else {
-        doc = parser.parse(reinterpret_cast<const uint8_t *>(json), strlen(json), true);
-    }
-
-//    std::cout << "object: " << doc.is_object() << std::endl;
+    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
 
     if (assoc) {
         *return_value = simdjsonphp::make_array(doc.at(key));
     } else {
-        *return_value = simdjsonphp::make_object(doc.at(key).value());
+        *return_value = simdjsonphp::make_object(doc.at(key));
     }
-
-//    _return_null:
-//    delete &doc;
-
-
-
-//    simdjson::ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
-//    if (!pj->is_valid()) {
-//        delete pj;
-//        return;
-//    }
-//    simdjson::ParsedJson::Iterator pjh(*pj);
-//    bool is_found = cplus_find_node(key, pjh);
-//    if(!is_found) {
-//        goto _return_null;
-//    }
-//    if (assoc) {
-//        *return_value = simdjsonphp::make_array(pjh);
-//    } else {
-//        *return_value = simdjsonphp::make_object(pjh);
-//    }
-//
-//    _return_null:
-//    delete pj;
-
 }
 
 /* }}} */
