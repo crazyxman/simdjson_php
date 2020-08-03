@@ -54,31 +54,6 @@ bool cplus_simdjson_is_valid(const char *json) /* {{{ */ {
 
 /* }}} */
 
-void* cplus_simdjson_resource(const char *json, void *return_pj, u_short depth) /* {{{ */ {
-//    simdjson::ParsedJson *pj = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
-//    if (!pj->is_valid()) {
-//        delete pj;
-//        return nullptr;
-//    }
-//    simdjson::ParsedJson::Iterator *pjh = new  simdjson::ParsedJson::Iterator(*pj);
-//    return_pj = reinterpret_cast<void *>(pj);
-//    return reinterpret_cast<void *>(pjh);
-}
-
-/* }}} */
-
-void cplus_simdjson_dtor(void *handle, u_short type) /* {{{ */ {
-
-    if(SIMDJSON_RESOUCE_PJH_TYPE == type) {
-        simdjson::ParsedJson::Iterator *pjh = reinterpret_cast<simdjson::ParsedJson::Iterator *>(handle);
-        delete pjh;
-    } else if(SIMDJSON_RESOUCE_PJ_TYPE == type) {
-        simdjson::ParsedJson *pj = reinterpret_cast<simdjson::ParsedJson *>(handle);
-        delete pj;
-    }
-}
-
-/* }}} */
 static void simdjsonphp::parse(const std::string& p, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
 
     simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(p.data()), p.length(), true, depth);
@@ -203,60 +178,6 @@ static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
 
 /* }}} */
 
-static bool cplus_find_node(const char *key, simdjson::ParsedJson::Iterator &pjh) /* {{{ */ {
-
-    char *pkey = estrdup(key);
-    char const *seps = "\t";
-    char *token = strtok(pkey, seps);
-    bool found = false;
-
-    while (token != NULL) {
-        found = false;
-        switch (pjh.get_type()) {
-            case SIMDJSON_NODE_TYPE_ARRAY :
-                if (pjh.down()) {
-                    int n = 0, index = 0;
-                    try {
-                        index = std::stoul(token);
-                    } catch (...) {
-                        break;
-                    }
-                    do {
-                        if (n == index) {
-                            found = true;
-                            break;
-                        }
-                        n++;
-                    } while (pjh.next());
-                }
-                break;
-            case SIMDJSON_NODE_TYPE_OBJECT :
-                if (pjh.down()) {
-                    do {
-                        if (strcmp(pjh.get_string(), token) == 0) {
-                            found = true;
-                            pjh.next();
-                            break;
-                        }
-                        pjh.next();
-                    } while (pjh.next());
-                }
-                break;
-        }
-        if (!found) {
-            break;
-        }
-        token = strtok(NULL, seps);
-    }
-    efree(pkey);
-    if (found) {
-        return true;
-    }
-    return false;
-}
-
-/* }}} */
-
 void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
 
     simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
@@ -266,24 +187,6 @@ void cplus_simdjson_key_value(const char *json, const char *key, zval *return_va
     } else {
         *return_value = simdjsonphp::make_object(doc.at(key));
     }
-}
-
-/* }}} */
-
-void cplus_simdjson_key_value_pjh(void *pjh, const char *key, zval *return_value, unsigned char assoc) /* {{{ */ {
-
-//    simdjson::ParsedJson::Iterator *pjh_v = reinterpret_cast<simdjson::ParsedJson::Iterator *>(pjh);
-//    while (pjh_v->up()) {}
-//    bool is_found = cplus_find_node(key, *pjh_v);
-//    if(!is_found) {
-//        return;
-//    }
-//    if (assoc) {
-//        *return_value = simdjsonphp::make_array(*pjh_v);
-//    } else {
-//        *return_value = simdjsonphp::make_object(*pjh_v);
-//    }
-
 }
 
 /* }}} */
@@ -302,22 +205,6 @@ u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short dep
         return SIMDJSON_PARSE_KEY_NOEXISTS;
     }
     return SIMDJSON_PARSE_KEY_EXISTS;
-}
-
-/* }}} */
-
-
-u_short cplus_simdjson_key_exists_pjh(void *pjh, const char *key) /* {{{ */ {
-
-//    simdjson::ParsedJson::Iterator *pjh_v = reinterpret_cast<simdjson::ParsedJson::Iterator *>(pjh);
-//    while (pjh_v->up()) {}
-//    bool is_found = cplus_find_node(key, *pjh_v);
-//    if (is_found) {
-//        return SIMDJSON_PARSE_KEY_EXISTS;
-//    } else {
-//        return SIMDJSON_PARSE_KEY_NOEXISTS;
-//    }
-
 }
 
 /* }}} */
@@ -346,21 +233,3 @@ void cplus_simdjson_key_count(const char *json, const char *key, zval *return_va
 }
 
 /* }}} */
-
-void cplus_simdjson_key_count_pjh(void *pjh, const char *key, zval *return_value) /* {{{ */ {
-
-    /*
-    if(!is_found) {
-        return;
-    }*/
-    //*return_value = *pjh_v->size();
-}
-
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- * vim600: noet sw=4 ts=4 fdm=marker
- * vim<600: noet sw=4 ts=4
- */
