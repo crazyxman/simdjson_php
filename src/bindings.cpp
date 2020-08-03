@@ -193,13 +193,9 @@ void cplus_simdjson_key_value(const char *json, const char *key, zval *return_va
 
 u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short depth) /* {{{ */ {
 
-    simdjson::dom::element doc;
-    auto error = parser.parse(reinterpret_cast<const uint8_t *>(json), strlen(json)).get(doc);
+    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
 
-    if (error) {
-        return SIMDJSON_PARSE_FAIL;
-    }
-    error = doc.at(key).error();
+    auto error = doc.at(key).error();
 
     if (error) {
         return SIMDJSON_PARSE_KEY_NOEXISTS;
