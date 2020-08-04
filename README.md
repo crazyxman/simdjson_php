@@ -1,8 +1,8 @@
 # simdjson_php
-simdjson_php bindings for the simdjson project. https://github.com/lemire/simdjson
+simdjson_php bindings for the [simdjson project](https://github.com/lemire/simdjson).
 
-### Requirement
-- PHP 7.0 +
+## Requirement
+- PHP 7.3 +
 - We support platforms like Linux or macOS
 - A processor with 
   - AVX2 (i.e., Intel processors starting with the Haswell microarchitecture released 2013 and AMD processors starting with the Zen microarchitecture released 2017), 
@@ -14,18 +14,26 @@ simdjson_php bindings for the simdjson project. https://github.com/lemire/simdjs
   - OS X: `sysctl -a | grep machdep.cpu.leaf7_features`
   - Linux: `grep avx2 /proc/cpuinfo`
 
-### Compile simdjson_php in Linux
+## Compile simdjson_php in Linux
 ```
-$/path/to/phpize
-$./configure --with-php-config=/path/to/php-config
-$make && make install
+$ phpize
+$ ./configure
+$ make
+$ make test
+$ make install
 ```
 
-### simdjson_php Usage
+Add the following line to your php.ini
+
+```
+extension=simdjson.so
+```
+
+## simdjson_php Usage
 ```php
 
 //Check if a JSON string is valid:
-$isValid = simdjson_isvalid($jsonString); //return bool
+$isValid = simdjson_is_valid($jsonString); //return bool
 
 //Parsing a JSON string. similar to the json_decode() function but without the fourth argument
 $parsedJSON = simdjson_decode($jsonString, true, 512); //return array|object|null. "null" string is not a standard json
@@ -64,29 +72,18 @@ array(1) {
 }
 */
 
-//Get the parsed json resource
-$resource = simdjson_resource($jsonString);
-//get the value of a "key" in 'resource'
-$value = simdjson_key_value($resource, "Image/Thumbnail/Url");
-var_dump($value); // string(38) "http://www.example.com/image/481989943"
-
-$value = simdjson_key_value($resource, "Image/IDs/4", true);
-var_dump($value); 
-/*
-array(1) {
-  ["p"]=>
-  string(2) "30"
-}
-*/
-
 //check if the key exists. return true|false|null. "true" exists, "false" does not exist, "null" string is not a standard json
 $res = simdjson_key_exists($jsonString, "Image/IDs/1");
 var_dump($res) //bool(true)
 
+// count the values
+$res = simdjson_key_count($jsonString, "Image/IDs");
+var_dump($res) //int(5)
+
 ```
 
-### Benchmarks (sec)
-filename|json_decode|simdjson_decode|simdjson_isvalid
+## Benchmarks (sec)
+filename|json_decode|simdjson_decode|simdjson_is_valid
 ---|:--:|---:|---:
 apache_builds.json|0.00307300|0.00225200|0.00018100
 canada.json|0.13955000|0.02773900|0.00358300
@@ -103,5 +100,4 @@ twitter.json|0.01258600|0.00618400|0.00057400
 twitterescaped.json|0.01435900|0.00650400|0.00074300
 update-center.json|0.01506000|0.00869100|0.00047800
 
-You may run the benchmarks by running the commands:
-* php benchmark/benchmark.php
+See the [benchmark](./benchmark) folder for more benchmarks.

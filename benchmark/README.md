@@ -19,7 +19,7 @@ make test
 composer install
 ```
 
-## Run benchmark
+## Run PHPBench benchmark
 
 Execute from project root folder:
 
@@ -107,5 +107,12 @@ suite: 1343d643ab682962f20a6f8c0f5615c1b987a7bc, date: 2020-08-04, stime: 16:29:
 | MultipleAccessBench | simdjsonMultipleAccessSameDocument      | multiple | 903,496b | 0.01500ms | 0.01460ms | 1.00x |
 | MultipleAccessBench | simdjsonMultipleAccessDifferentDocument | multiple | 903,496b | 0.01512ms | 0.01460ms | 1.01x |
 +---------------------+-----------------------------------------+----------+----------+-----------+-----------+-------+
+```
 
+## Run benchmark
+
+You may run the benchmarks by running the commands:
+
+```
+php -d extension=modules/simdjson.so benchmark/test.php
 ```
