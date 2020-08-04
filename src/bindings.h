@@ -15,7 +15,7 @@
 
 namespace simdjsonphp {
 
-    static bool is_valid(std::string p);
+    static bool is_valid(const std::string& p);
 
     static void parse(const std::string& p, zval *return_value, unsigned char assoc, u_short depth);
 

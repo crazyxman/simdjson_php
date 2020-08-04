@@ -12,6 +12,8 @@
 */
 
 
+#include <ext/spl/spl_exceptions.h>
+#include <Zend/zend_exceptions.h>
 #include "php.h"
 #include "php_simdjson.h"
 
@@ -36,7 +38,7 @@ simdjson::dom::element build_parsed_json_cust(const uint8_t *buf, size_t len, bo
 }
 
 
-static bool simdjsonphp::is_valid(std::string p) /* {{{ */ {
+static bool simdjsonphp::is_valid(const std::string& p) /* {{{ */ {
     simdjson::dom::element doc;
     auto error = parser.parse(p).get(doc);
 
@@ -181,11 +183,19 @@ static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
 void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
 
     simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
+    simdjson::dom::element element;
+
+    try {
+        element = doc.at(key);
+    } catch (simdjson::simdjson_error &e) {
+        zend_throw_exception(spl_ce_RuntimeException, e.what(), 0 );
+        return;
+    }
 
     if (assoc) {
-        *return_value = simdjsonphp::make_array(doc.at(key));
+        *return_value = simdjsonphp::make_array(element);
     } else {
-        *return_value = simdjsonphp::make_object(doc.at(key));
+        *return_value = simdjsonphp::make_object(element);
     }
 }
 
@@ -209,7 +219,14 @@ u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short dep
 void cplus_simdjson_key_count(const char *json, const char *key, zval *return_value, u_short depth) /* {{{ */ {
 
     simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
-    simdjson::dom::element element = doc.at(key);
+    simdjson::dom::element element;
+
+    try {
+        element = doc.at(key);
+    } catch (simdjson::simdjson_error &e) {
+        zend_throw_exception(spl_ce_RuntimeException, e.what(), 0 );
+        return;
+    }
 
     zval v;
 
