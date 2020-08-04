@@ -2,6 +2,8 @@
 
 ## Build project
 
+Build the project from the project root folder:
+ 
 ``` 
 phpize
 ./configure
@@ -11,7 +13,7 @@ make test
 
 ## Install PHP Composer dependecies
 
-[Install Composer](https://getcomposer.org/download/) if not already done and execute:
+[Install Composer](https://getcomposer.org/download/) if not already done and execute it in the benchmark folder:
 
 ```
 composer install
@@ -22,33 +24,88 @@ composer install
 Execute from project root folder:
 
 ```
-php benchmark/vendor/bin/phpbench run --report=table
+php benchmark/vendor/bin/phpbench run --report=table --group decode
 ```
 
 The output should look like this:
 
 ``` 
-$ php benchmark/vendor/bin/phpbench run --report=table
-PhpBench @git_tag@. Running benchmarks.
-Using configuration file: /home/skeil/data/sources/sandrokeil/simdjson_php/phpbench.json.dist
+\SimdjsonBench\DecodeBench
 
-11 subjects, 55 iterations, 55 revs, 0 rejects, 0 failures, 0 warnings
-(best [mean mode] worst) = 2.200 [5.396 5.406] 2.200 (μs)
-⅀T: 296.800μs μSD/r 0.055μs μRSD/r: 0.810%
-suite: 1343d1aa9acc97af8673633f932bfa31f7e5b0df, date: 2020-07-30, stime: 20:07:58
+    jsonDecodeAssoc.........................R4 I4 [μ Mo]/r: 0.00972 0.00978 (ms) [μSD μRSD]/r: 0.000ms 2.10%
+    jsonDecode..............................R1 I2 [μ Mo]/r: 0.01060 0.01060 (ms) [μSD μRSD]/r: 0.000ms 1.19%
+    simdjsonDecodeAssoc.....................R5 I4 [μ Mo]/r: 0.00580 0.00580 (ms) [μSD μRSD]/r: 0.000ms 3.08%
+    simdjsonDecode..........................R5 I4 [μ Mo]/r: 0.00680 0.00680 (ms) [μSD μRSD]/r: 0.000ms 1.86%
+
+4 subjects, 20 iterations, 20 revs, 0 rejects, 0 failures, 0 warnings
+(best [mean mode] worst) = 5.600 [8.230 8.246] 6.000 (μs)
+⅀T: 164.600μs μSD/r 0.159μs μRSD/r: 2.059%
+suite: 1343d64965925446273f4815a25108531738fcaf, date: 2020-08-04, stime: 16:30:36
++-------------+---------------------+--------+----------+-----------+-----------+-------+
+| benchmark   | subject             | groups | mem_peak | mean      | best      | diff  |
++-------------+---------------------+--------+----------+-----------+-----------+-------+
+| DecodeBench | simdjsonDecodeAssoc | decode | 880,864b | 0.00580ms | 0.00560ms | 1.00x |
+| DecodeBench | simdjsonDecode      | decode | 880,856b | 0.00680ms | 0.00660ms | 1.17x |
+| DecodeBench | jsonDecodeAssoc     | decode | 880,856b | 0.00972ms | 0.00940ms | 1.68x |
+| DecodeBench | jsonDecode          | decode | 880,856b | 0.01060ms | 0.01040ms | 1.83x |
++-------------+---------------------+--------+----------+-----------+-----------+-------+
+```
+
+```
+php benchmark/vendor/bin/phpbench run --report=table --group key_value
+```
+
+The output should look like this:
+
+``` 
+\SimdjsonBench\KeyValueBench
+
+    jsonDecode..............................R1 I4 [μ Mo]/r: 0.00968 0.00962 (ms) [μSD μRSD]/r: 0.000ms 2.11%
+    simdjsonDeepString......................R1 I2 [μ Mo]/r: 0.00240 0.00240 (ms) [μSD μRSD]/r: 0.000ms 0.00%
+    simdjsonDeepStringAssoc.................R1 I2 [μ Mo]/r: 0.00240 0.00240 (ms) [μSD μRSD]/r: 0.000ms 0.00%
+    simdjsonInt.............................R3 I4 [μ Mo]/r: 0.00200 0.00200 (ms) [μSD μRSD]/r: 0.000ms 0.00%
+    simdjsonIntAssoc........................R2 I1 [μ Mo]/r: 0.00220 0.00220 (ms) [μSD μRSD]/r: 0.000ms 0.00%
+    simdjsonArray...........................R1 I2 [μ Mo]/r: 0.00340 0.00340 (ms) [μSD μRSD]/r: 0.000ms 0.00%
+    simdjsonObject..........................R1 I2 [μ Mo]/r: 0.00400 0.00400 (ms) [μSD μRSD]/r: 0.000ms 0.00%
+
+7 subjects, 35 iterations, 35 revs, 0 rejects, 0 failures, 0 warnings
+(best [mean mode] worst) = 2.000 [3.726 3.717] 2.000 (μs)
+⅀T: 130.400μs μSD/r 0.029μs μRSD/r: 0.301%
+suite: 1343d642240d34ab476549affaa92a81d4f7ce57, date: 2020-08-04, stime: 16:31:43
 +---------------+-------------------------+-----------+----------+-----------+-----------+-------+
 | benchmark     | subject                 | groups    | mem_peak | mean      | best      | diff  |
 +---------------+-------------------------+-----------+----------+-----------+-----------+-------+
-| DecodeBench   | simdjsonDecodeAssoc     | decode    | 880,864b | 0.00596ms | 0.00580ms | 2.71x |
-| DecodeBench   | simdjsonDecode          | decode    | 880,856b | 0.00672ms | 0.00660ms | 3.05x |
-| DecodeBench   | jsonDecodeAssoc         | decode    | 880,856b | 0.00972ms | 0.00960ms | 4.42x |
-| DecodeBench   | jsonDecode              | decode    | 880,856b | 0.01044ms | 0.01040ms | 4.75x |
-| KeyValueBench | simdjsonInt             | key_value | 884,496b | 0.00220ms | 0.00220ms | 1.00x |
-| KeyValueBench | simdjsonIntAssoc        | key_value | 884,504b | 0.00220ms | 0.00220ms | 1.00x |
-| KeyValueBench | simdjsonDeepString      | key_value | 884,504b | 0.00240ms | 0.00240ms | 1.09x |
-| KeyValueBench | simdjsonDeepStringAssoc | key_value | 884,504b | 0.00240ms | 0.00240ms | 1.09x |
-| KeyValueBench | simdjsonArray           | key_value | 884,496b | 0.00348ms | 0.00340ms | 1.58x |
-| KeyValueBench | simdjsonObject          | key_value | 884,496b | 0.00400ms | 0.00400ms | 1.82x |
-| KeyValueBench | jsonDecode              | key_value | 884,496b | 0.00984ms | 0.00960ms | 4.47x |
+| KeyValueBench | simdjsonInt             | key_value | 884,496b | 0.00200ms | 0.00200ms | 1.00x |
+| KeyValueBench | simdjsonIntAssoc        | key_value | 884,504b | 0.00220ms | 0.00220ms | 1.10x |
+| KeyValueBench | simdjsonDeepString      | key_value | 884,504b | 0.00240ms | 0.00240ms | 1.20x |
+| KeyValueBench | simdjsonDeepStringAssoc | key_value | 884,504b | 0.00240ms | 0.00240ms | 1.20x |
+| KeyValueBench | simdjsonArray           | key_value | 884,496b | 0.00340ms | 0.00340ms | 1.70x |
+| KeyValueBench | simdjsonObject          | key_value | 884,496b | 0.00400ms | 0.00400ms | 2.00x |
+| KeyValueBench | jsonDecode              | key_value | 884,496b | 0.00968ms | 0.00940ms | 4.84x |
 +---------------+-------------------------+-----------+----------+-----------+-----------+-------+
+```
+
+```
+php benchmark/vendor/bin/phpbench run --report=table --group multiple
+```
+
+The output should look like this:
+
+``` 
+\SimdjsonBench\MultipleAccessBench
+
+    simdjsonMultipleAccessSameDocument......R1 I4 [μ Mo]/r: 0.01500 0.01481 (ms) [μSD μRSD]/r: 0.000ms 2.39%
+    simdjsonMultipleAccessDifferentDocument.R5 I4 [μ Mo]/r: 0.01512 0.01537 (ms) [μSD μRSD]/r: 0.000ms 2.31%
+
+2 subjects, 10 iterations, 10 revs, 0 rejects, 0 failures, 0 warnings
+(best [mean mode] worst) = 14.600 [15.060 15.088] 15.400 (μs)
+⅀T: 150.600μs μSD/r 0.353μs μRSD/r: 2.346%
+suite: 1343d643ab682962f20a6f8c0f5615c1b987a7bc, date: 2020-08-04, stime: 16:29:21
++---------------------+-----------------------------------------+----------+----------+-----------+-----------+-------+
+| benchmark           | subject                                 | groups   | mem_peak | mean      | best      | diff  |
++---------------------+-----------------------------------------+----------+----------+-----------+-----------+-------+
+| MultipleAccessBench | simdjsonMultipleAccessSameDocument      | multiple | 903,496b | 0.01500ms | 0.01460ms | 1.00x |
+| MultipleAccessBench | simdjsonMultipleAccessDifferentDocument | multiple | 903,496b | 0.01512ms | 0.01460ms | 1.01x |
++---------------------+-----------------------------------------+----------+----------+-----------+-----------+-------+
+
 ```
