@@ -16,6 +16,7 @@
 #endif
 
 #include "php.h"
+#include "zend_exceptions.h"
 #include "main/SAPI.h"
 #include "ext/standard/info.h"
 
