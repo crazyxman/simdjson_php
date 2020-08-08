@@ -17,11 +17,11 @@ ENV PHPIZE_DEPS \
 RUN set -xe \
     && apk add --no-cache --virtual .build-deps \
         $PHPIZE_DEPS \
-  && docker-php-source extract \
-  && cd /tmp/simdjson \
+    && cd /tmp/simdjson \
         && phpize  \
         && ./configure  \
         && make  \
         && make install \
         && make test \
-  && docker-php-source delete
+        && rm -rf /tmp/simdjson \
+        && echo "extension=simdjson.so" > /usr/local/etc/php/conf.d/simdjson.ini
