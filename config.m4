@@ -41,6 +41,9 @@ if test "$PHP_SIMDJSON" != "no"; then
     AC_MSG_RESULT([$php_version, ok])
   fi
 
+  PHP_SUBST(SIMDJSON_SHARED_LIBADD)
+  PHP_ADD_LIBRARY(stdc++, 1, SIMDJSON_SHARED_LIBADD)
+
   AC_DEFINE(HAVE_SIMDJSON, 1, [whether simdjson is enabled])
   PHP_NEW_EXTENSION(simdjson,
       simdjson.cpp                        \
