@@ -24,26 +24,24 @@
 simdjson::dom::parser parser;
 
 WARN_UNUSED
-simdjson::dom::element build_parsed_json_cust(const uint8_t *buf, size_t len, bool realloc_if_needed, u_short depth = simdjson::DEFAULT_MAX_DEPTH) {
-    simdjson::dom::element doc;
+simdjson::error_code build_parsed_json_cust(simdjson::dom::element &doc, const uint8_t *buf, size_t len, bool realloc_if_needed,
+                                              u_short depth = simdjson::DEFAULT_MAX_DEPTH) {
     simdjson::error_code error = parser.allocate(len, depth);
 
     if (error) {
-        std::cerr << "failure during memory allocation " << std::endl;
-    } else {
-        try {
-            doc = parser.parse(buf, len, realloc_if_needed);
-        } catch (simdjson::simdjson_error &e) {
-            zend_throw_exception(spl_ce_RuntimeException, e.what(), 0 );
-            doc = parser.parse("{}"_padded);
-        }
+        return error;
     }
 
-    return doc;
+    error = parser.parse(buf, len, realloc_if_needed).get(doc);
+    if (error) {
+        return error;
+    }
+
+    return simdjson::SUCCESS;
 }
 
 
-static bool simdjsonphp::is_valid(const std::string& p) /* {{{ */ {
+static bool simdjsonphp::is_valid(const std::string &p) /* {{{ */ {
     simdjson::dom::element doc;
     auto error = parser.parse(p).get(doc);
 
@@ -61,9 +59,15 @@ bool cplus_simdjson_is_valid(const char *json) /* {{{ */ {
 
 /* }}} */
 
-static void simdjsonphp::parse(const std::string& p, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
+static void simdjsonphp::parse(const std::string &p, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
 
-    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(p.data()), p.length(), true, depth);
+    simdjson::dom::element doc;
+    simdjson::error_code error = build_parsed_json_cust(doc, reinterpret_cast<const uint8_t *>(p.data()), p.length(), true,
+                                                        depth);
+    if (error) {
+        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
+        return;
+    }
 
     if (assoc) {
         *return_value = simdjsonphp::make_array(doc);
@@ -88,14 +92,11 @@ static zval simdjsonphp::make_array(simdjson::dom::element element) /* {{{ */ {
         case simdjson::dom::element_type::STRING :
             ZVAL_STRING(&v, std::string_view(element).data());
             break;
-        case simdjson::dom::element_type::INT64 :
-        ZVAL_LONG(&v,  int64_t(element));
+        case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, int64_t(element));
             break;
-        case simdjson::dom::element_type::UINT64 :
-        ZVAL_LONG(&v,  uint64_t(element));
+        case simdjson::dom::element_type::UINT64 : ZVAL_LONG(&v, uint64_t(element));
             break;
-        case simdjson::dom::element_type::DOUBLE :
-        ZVAL_DOUBLE(&v, double(element));
+        case simdjson::dom::element_type::DOUBLE : ZVAL_DOUBLE(&v, double(element));
             break;
         case simdjson::dom::element_type::BOOL :
             ZVAL_BOOL(&v, bool(element));
@@ -141,14 +142,11 @@ static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
         case simdjson::dom::element_type::STRING :
             ZVAL_STRING(&v, std::string_view(element).data());
             break;
-        case simdjson::dom::element_type::INT64 :
-            ZVAL_LONG(&v,  int64_t(element));
+        case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, int64_t(element));
             break;
-        case simdjson::dom::element_type::UINT64 :
-            ZVAL_LONG(&v,  uint64_t(element));
+        case simdjson::dom::element_type::UINT64 : ZVAL_LONG(&v, uint64_t(element));
             break;
-        case simdjson::dom::element_type::DOUBLE :
-            ZVAL_DOUBLE(&v, double(element));
+        case simdjson::dom::element_type::DOUBLE : ZVAL_DOUBLE(&v, double(element));
             break;
         case simdjson::dom::element_type::BOOL :
             ZVAL_BOOL(&v, bool(element));
@@ -185,15 +183,21 @@ static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
 
 /* }}} */
 
-void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
-
-    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
+void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc,
+                              u_short depth) /* {{{ */ {
+    simdjson::dom::element doc;
     simdjson::dom::element element;
+    simdjson::error_code error = build_parsed_json_cust(doc, reinterpret_cast<const uint8_t *>(json), strlen(json), true,
+                                                        depth);
+    if (error) {
+        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
+        return;
+    }
 
-    try {
-        element = doc.at(key);
-    } catch (simdjson::simdjson_error &e) {
-        zend_throw_exception(spl_ce_RuntimeException, e.what(), 0 );
+    error = doc.at(key).get(element);
+
+    if (error) {
+        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
         return;
     }
 
@@ -207,11 +211,13 @@ void cplus_simdjson_key_value(const char *json, const char *key, zval *return_va
 /* }}} */
 
 u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short depth) /* {{{ */ {
-
-    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
-
-    auto error = doc.at(key).error();
-
+    simdjson::dom::element doc;
+    simdjson::error_code error = build_parsed_json_cust(doc, reinterpret_cast<const uint8_t *>(json), strlen(json), true,
+                                                        depth);
+    if (error) {
+        return SIMDJSON_PARSE_KEY_NOEXISTS;
+    }
+    error = doc.at(key).error();
     if (error) {
         return SIMDJSON_PARSE_KEY_NOEXISTS;
     }
@@ -222,29 +228,29 @@ u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short dep
 
 
 void cplus_simdjson_key_count(const char *json, const char *key, zval *return_value, u_short depth) /* {{{ */ {
-
-    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
+    simdjson::dom::element doc;
     simdjson::dom::element element;
+    simdjson::error_code error = build_parsed_json_cust(doc, reinterpret_cast<const uint8_t *>(json), strlen(json), true,
+                                       depth);
+    if (error) {
+        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
+        return;
+    }
 
-    try {
-        element = doc.at(key);
-    } catch (simdjson::simdjson_error &e) {
-        zend_throw_exception(spl_ce_RuntimeException, e.what(), 0 );
+    error = doc.at(key).get(element);
+    if (error) {
+        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
         return;
     }
 
     zval v;
-
     switch (element.type()) {
         //ASCII sort
-        case simdjson::dom::element_type::ARRAY :
-            ZVAL_LONG(&v, uint64_t(simdjson::dom::array(element).size()));
+        case simdjson::dom::element_type::ARRAY : ZVAL_LONG(&v, uint64_t(simdjson::dom::array(element).size()));
             break;
-        case simdjson::dom::element_type::OBJECT :
-            ZVAL_LONG(&v, uint64_t(simdjson::dom::object(element).size()));
+        case simdjson::dom::element_type::OBJECT : ZVAL_LONG(&v, uint64_t(simdjson::dom::object(element).size()));
             break;
-        default:
-            ZVAL_LONG(&v, 0);
+        default: ZVAL_LONG(&v, 0);
             break;
     }
     *return_value = v;
