@@ -31,7 +31,12 @@ simdjson::dom::element build_parsed_json_cust(const uint8_t *buf, size_t len, bo
     if (error) {
         std::cerr << "failure during memory allocation " << std::endl;
     } else {
-        doc = parser.parse(buf, len, realloc_if_needed);
+        try {
+            doc = parser.parse(buf, len, realloc_if_needed);
+        } catch (simdjson::simdjson_error &e) {
+            zend_throw_exception(spl_ce_RuntimeException, e.what(), 0 );
+            doc = parser.parse("{}"_padded);
+        }
     }
 
     return doc;

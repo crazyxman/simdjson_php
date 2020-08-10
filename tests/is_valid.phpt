@@ -16,8 +16,12 @@ var_dump($value);
 $value = \simdjson_is_valid('{"corrupt" true}');
 var_dump($value);
 
+$value = \simdjson_is_valid('Invalid JSON string');
+var_dump($value);
+
 ?>
 --EXPECTF--
 bool(true)
+bool(false)
 bool(false)
 bool(false)
