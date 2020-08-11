@@ -6,7 +6,7 @@
  * Time: 3:32 AM
  */
 
-$title = "filename|json_decode|simdjson_decode|simdjson_isvalid\n---|:--:|---:|---:\n";
+$title = "filename|json_decode|simdjson_decode|simdjson_is_valid\n---|:--:|---:|---:\n";
 foreach (glob(__DIR__.'/../jsonexamples/*.json') as $key=>$item) {
 
     $jsonString = file_get_contents($item);
@@ -18,7 +18,7 @@ foreach (glob(__DIR__.'/../jsonexamples/*.json') as $key=>$item) {
 
 
     $stime = microtime_float();
-    simdjson_isvalid($jsonString);
+    simdjson_is_valid($jsonString);
     $etime = microtime_float();
     $simdi_time = bcsub($etime, $stime, 8);
 

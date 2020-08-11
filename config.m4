@@ -1,11 +1,17 @@
-PHP_ARG_ENABLE(simdjson, whether to enable simdjson support,
-[  --enable-simdjson           Enable simdjson support])
+dnl $Id$
+dnl config.m4 for extension simdjson
+
+sinclude(./autoconf/pecl.m4)
+sinclude(./autoconf/php-executable.m4)
+
+PECL_INIT([simdjson])
+
+PHP_ARG_ENABLE(simdjson, whether to enable simdjson, [ --enable-simdjson   Enable simdjson])
 
 if test "$PHP_SIMDJSON" != "no"; then
 
   CXXFLAGS=" -march=native -O2 -std=c++17 "
   PHP_REQUIRE_CXX()
-
 
   AC_MSG_CHECKING([PHP version])
 
@@ -35,10 +41,16 @@ if test "$PHP_SIMDJSON" != "no"; then
     AC_MSG_RESULT([$php_version, ok])
   fi
 
+  PHP_SUBST(SIMDJSON_SHARED_LIBADD)
+  PHP_ADD_LIBRARY(stdc++, 1, SIMDJSON_SHARED_LIBADD)
+
+  AC_DEFINE(HAVE_SIMDJSON, 1, [whether simdjson is enabled])
   PHP_NEW_EXTENSION(simdjson,
-    simdjson.c                          \
-    src/bindings.cpp                    \
-    src/simdjson.cpp,
-  $ext_shared)
-  PHP_ADD_BUILD_DIR([$ext_builddir/src])
+      simdjson.cpp                        \
+      src/bindings.cpp                    \
+      src/simdjson.cpp,
+    $ext_shared)
+
+  PHP_ADD_MAKEFILE_FRAGMENT
+  PHP_INSTALL_HEADERS([ext/simdjson], [php_simdjson.h])
 fi
