@@ -74,5 +74,5 @@ var_dump($res) //int(5)
 
 ```
 
-## Benchmarks (sec)
+## Benchmarks
 See the [benchmark](./benchmark) folder for more benchmarks.
