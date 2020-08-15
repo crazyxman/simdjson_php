@@ -1,9 +1,6 @@
 name: Testing simdjson PHP extension
 on: [push, pull_request]
 
-env:
-  NO_INTERACTION: 1
-
 jobs:
   PHP74-alpine:
     name: PHP 7.4 Alpine 3.12
@@ -18,16 +15,77 @@ jobs:
       - name: "Show"
         run: "docker run --rm simdjsontest php --ri simdjson"
 
-  Ubuntu:
-    name: "PHP"
-    runs-on: "ubuntu-latest"
+  PHP73-alpine:
+    name: PHP 7.3 Alpine 3.12
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.3.1"
 
+      - name: "Build extension"
+        run: "docker build -t simdjsontest -f docker_php7.3-alpine ."
+
+      - name: "Show"
+        run: "docker run --rm simdjsontest php --ri simdjson"
+
+  PHP72-alpine:
+    name: PHP 7.2 Alpine 3.12
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.3.1"
+
+      - name: "Build extension"
+        run: "docker build -t simdjsontest -f docker_php7.2-alpine ."
+
+      - name: "Show"
+        run: "docker run --rm simdjsontest php --ri simdjson"
+
+  PHP71-alpine:
+    name: PHP 7.1 Alpine 3.10
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.3.1"
+
+      - name: "Build extension"
+        run: "docker build -t simdjsontest -f docker_php7.1-alpine ."
+
+      - name: "Show"
+        run: "docker run --rm simdjsontest php --ri simdjson"
+
+  PHP70-alpine:
+    name: PHP 7.0 Alpine 3.7
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.3.1"
+
+      - name: "Build extension"
+        run: "docker build -t simdjsontest -f docker_php7.0-alpine ."
+
+      - name: "Show"
+        run: "docker run --rm simdjsontest php --ri simdjson"
+
+  Ubuntu:
     strategy:
+      fail-fast: false
       matrix:
         php-version:
+          - "7.0"
+          - "7.1"
+          - "7.2"
           - "7.3"
           - "7.4"
-
+        os: [ubuntu-latest]
+        experimental: [false]
+        include:
+          - php-version: "8.0"
+            os: ubuntu-latest
+            experimental: true
+    runs-on: ${{ matrix.os }}
+    name: PHP ${{ matrix.php-version }} Test on ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     steps:
       - name: "Checkout"
         uses: "actions/checkout@v2.3.1"
@@ -36,9 +94,14 @@ jobs:
         uses: "shivammathur/setup-php@2.4.1"
         with:
           php-version: "${{ matrix.php-version }}"
+          # for correct php-config extension dir, see https://github.com/shivammathur/setup-php/issues/147
+          tools: pecl, phpize, php-config
 
       - name: "Build extension"
+        env:
+          NO_INTERACTION: true
         run: |
+          php-config --extension-dir
           phpize
           ./configure
           sudo make
@@ -51,3 +114,12 @@ jobs:
       - name: "Error log"
         if: ${{ failure() }}
         run: "ls -1t tests/*.log | xargs -d'\n' cat"
+
+      - name: "Error diff"
+        if: ${{ failure() }}
+        run: |
+          for FILE in $(find tests -name '*.diff'); do
+            echo $FILE
+            cat FILE
+            echo
+          done
