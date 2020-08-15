@@ -12,32 +12,14 @@
 */
 
 #include "simdjson.h"
-
-namespace simdjsonphp {
-
-    static bool is_valid(const std::string& p);
-
-    static void parse(const std::string& p, zval *return_value, unsigned char assoc, u_short depth);
-
-    static zval make_array(simdjson::dom::element element);
-
-    static zval make_object(simdjson::dom::element element);
-}
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-bool cplus_simdjson_isvalid(const char *json);
-
-void cplus_simdjson_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth);
-
-void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth);
-
-u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short depth);
-
-void cplus_simdjson_key_count(const char *json, const char *key, zval *return_value, u_short depth);
-
+    bool cplus_simdjson_is_valid(const char *json, size_t len);
+    void cplus_simdjson_parse(const char *json, size_t len, zval *return_value, unsigned char assoc, u_short depth);
+    void cplus_simdjson_key_value(const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc, u_short depth);
+    u_short cplus_simdjson_key_exists(const char *json, size_t len, const char *key, u_short depth);
+    void cplus_simdjson_key_count(const char *json, size_t len, const char *key, zval *return_value, u_short depth);
 #ifdef __cplusplus
 }
 #endif

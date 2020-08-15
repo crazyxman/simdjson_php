@@ -51,22 +51,22 @@ ZEND_BEGIN_ARG_INFO(simdjson_key_count_arginfo, 2)
         ZEND_ARG_INFO(0, key)
 ZEND_END_ARG_INFO()
 
-extern bool cplus_simdjson_is_valid(const char *json);
+extern bool cplus_simdjson_is_valid(const char *json, size_t len);
 
-extern void cplus_simdjson_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth);
+extern void cplus_simdjson_parse(const char *json, size_t len, zval *return_value, unsigned char assoc, u_short depth);
 
-extern void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth);
+extern void cplus_simdjson_key_value(const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc, u_short depth);
 
-extern u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short depth);
+extern u_short cplus_simdjson_key_exists(const char *json, size_t len, const char *key, u_short depth);
 
-extern void cplus_simdjson_key_count(const char *json, const char *key, zval *return_value, u_short depth);
+extern void cplus_simdjson_key_count(const char *json, size_t len, const char *key, zval *return_value, u_short depth);
 
 PHP_FUNCTION (simdjson_is_valid) {
     zend_string *json = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &json) == FAILURE) {
         return;
     }
-    short is_json = cplus_simdjson_is_valid(ZSTR_VAL(json));
+    short is_json = cplus_simdjson_is_valid(ZSTR_VAL(json), ZSTR_LEN(json));
     ZVAL_BOOL(return_value, is_json);
 }
 
@@ -77,7 +77,7 @@ PHP_FUNCTION (simdjson_decode) {
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|bl", &json, &assoc, &depth) == FAILURE) {
         return;
     }
-    cplus_simdjson_parse(ZSTR_VAL(json), return_value, assoc, depth + 1);
+    cplus_simdjson_parse(ZSTR_VAL(json), ZSTR_LEN(json), return_value, assoc, depth + 1);
 }
 
 PHP_FUNCTION (simdjson_key_value) {
@@ -90,7 +90,8 @@ PHP_FUNCTION (simdjson_key_value) {
         return;
     }
     if (IS_STRING == Z_TYPE_P(json)) {
-        cplus_simdjson_key_value(Z_STRVAL_P(json), ZSTR_VAL(key), return_value, assoc, depth + 1);
+        zend_string *zd_json = Z_STR_P(json);
+        cplus_simdjson_key_value(ZSTR_VAL(zd_json), ZSTR_LEN(zd_json), ZSTR_VAL(key), return_value, assoc, depth + 1);
     } else {
         php_error_docref(NULL, E_WARNING, "expects parameter 1 to be string");
     }
@@ -98,7 +99,6 @@ PHP_FUNCTION (simdjson_key_value) {
 }
 
 PHP_FUNCTION (simdjson_key_count) {
-
     zval *json = NULL;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
     zend_string *key = NULL;
@@ -106,7 +106,8 @@ PHP_FUNCTION (simdjson_key_count) {
         return;
     }
     if (IS_STRING == Z_TYPE_P(json)) {
-        cplus_simdjson_key_count(Z_STRVAL_P(json), ZSTR_VAL(key), return_value, depth + 1);
+        zend_string *zd_json = Z_STR_P(json);
+        cplus_simdjson_key_count(ZSTR_VAL(zd_json), ZSTR_LEN(zd_json), ZSTR_VAL(key), return_value, depth + 1);
     } else {
         php_error_docref(NULL, E_WARNING, "expects parameter 1 to be string");
     }
@@ -122,7 +123,8 @@ PHP_FUNCTION (simdjson_key_exists) {
     }
     u_short stats = SIMDJSON_PARSE_FAIL;
     if (IS_STRING == Z_TYPE_P(json)) {
-        stats = cplus_simdjson_key_exists(Z_STRVAL_P(json), ZSTR_VAL(key), depth + 1);
+        zend_string *zd_json = Z_STR_P(json);
+        stats = cplus_simdjson_key_exists(ZSTR_VAL(zd_json), ZSTR_LEN(zd_json), ZSTR_VAL(key), depth + 1);
     } else {
         php_error_docref(NULL, E_WARNING, "expects parameter 1 to be string");
     }

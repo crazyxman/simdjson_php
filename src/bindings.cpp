@@ -24,63 +24,26 @@
 simdjson::dom::parser parser;
 
 WARN_UNUSED
-simdjson::dom::element build_parsed_json_cust(const uint8_t *buf, size_t len, bool realloc_if_needed, u_short depth = simdjson::DEFAULT_MAX_DEPTH) {
-    simdjson::dom::element doc;
-    simdjson::error_code error = parser.allocate(len, depth);
+simdjson::error_code
+build_parsed_json_cust(simdjson::dom::element &doc, const char *buf, size_t len, bool realloc_if_needed,
+                       u_short depth = simdjson::DEFAULT_MAX_DEPTH) {
+    auto error = parser.allocate(len, depth);
 
     if (error) {
-        std::cerr << "failure during memory allocation " << std::endl;
-    } else {
-        try {
-            doc = parser.parse(buf, len, realloc_if_needed);
-        } catch (simdjson::simdjson_error &e) {
-            zend_throw_exception(spl_ce_RuntimeException, e.what(), 0 );
-            doc = parser.parse("{}"_padded);
-        }
+        return error;
     }
 
-    return doc;
-}
-
-
-static bool simdjsonphp::is_valid(const std::string& p) /* {{{ */ {
-    simdjson::dom::element doc;
-    auto error = parser.parse(p).get(doc);
-
+    error = parser.parse(buf, len, realloc_if_needed).get(doc);
     if (error) {
-        return false;
+        return error;
     }
-    return true;
+
+    return simdjson::SUCCESS;
 }
 
 /* }}} */
 
-bool cplus_simdjson_is_valid(const char *json) /* {{{ */ {
-    return simdjsonphp::is_valid(json);
-}
-
-/* }}} */
-
-static void simdjsonphp::parse(const std::string& p, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
-
-    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(p.data()), p.length(), true, depth);
-
-    if (assoc) {
-        *return_value = simdjsonphp::make_array(doc);
-    } else {
-        *return_value = simdjsonphp::make_object(doc);
-    }
-}
-
-/* }}} */
-
-void cplus_simdjson_parse(const char *json, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
-    simdjsonphp::parse(json, return_value, assoc, depth);
-}
-
-/* }}} */
-
-static zval simdjsonphp::make_array(simdjson::dom::element element) /* {{{ */ {
+static zval create_array(simdjson::dom::element element) /* {{{ */ {
     zval v;
 
     switch (element.type()) {
@@ -88,14 +51,11 @@ static zval simdjsonphp::make_array(simdjson::dom::element element) /* {{{ */ {
         case simdjson::dom::element_type::STRING :
             ZVAL_STRING(&v, std::string_view(element).data());
             break;
-        case simdjson::dom::element_type::INT64 :
-        ZVAL_LONG(&v,  int64_t(element));
+        case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, int64_t(element));
             break;
-        case simdjson::dom::element_type::UINT64 :
-        ZVAL_LONG(&v,  uint64_t(element));
+        case simdjson::dom::element_type::UINT64 : ZVAL_LONG(&v, uint64_t(element));
             break;
-        case simdjson::dom::element_type::DOUBLE :
-        ZVAL_DOUBLE(&v, double(element));
+        case simdjson::dom::element_type::DOUBLE : ZVAL_DOUBLE(&v, double(element));
             break;
         case simdjson::dom::element_type::BOOL :
             ZVAL_BOOL(&v, bool(element));
@@ -108,7 +68,7 @@ static zval simdjsonphp::make_array(simdjson::dom::element element) /* {{{ */ {
             array_init(&arr);
 
             for (simdjson::dom::element child : simdjson::dom::array(element)) {
-                zval value = simdjsonphp::make_array(child);
+                zval value = create_array(child);
                 add_next_index_zval(&arr, &value);
             }
 
@@ -119,7 +79,7 @@ static zval simdjsonphp::make_array(simdjson::dom::element element) /* {{{ */ {
             array_init(&obj);
 
             for (simdjson::dom::key_value_pair field : simdjson::dom::object(element)) {
-                zval value = simdjsonphp::make_array(field.value);
+                zval value = create_array(field.value);
                 add_assoc_zval_ex(&obj, field.key.data(), strlen(field.key.data()), &value);
             }
             v = obj;
@@ -133,7 +93,7 @@ static zval simdjsonphp::make_array(simdjson::dom::element element) /* {{{ */ {
 
 /* }}} */
 
-static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
+static zval create_object(simdjson::dom::element element) /* {{{ */ {
     zval v;
 
     switch (element.type()) {
@@ -141,14 +101,11 @@ static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
         case simdjson::dom::element_type::STRING :
             ZVAL_STRING(&v, std::string_view(element).data());
             break;
-        case simdjson::dom::element_type::INT64 :
-            ZVAL_LONG(&v,  int64_t(element));
+        case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, int64_t(element));
             break;
-        case simdjson::dom::element_type::UINT64 :
-            ZVAL_LONG(&v,  uint64_t(element));
+        case simdjson::dom::element_type::UINT64 : ZVAL_LONG(&v, uint64_t(element));
             break;
-        case simdjson::dom::element_type::DOUBLE :
-            ZVAL_DOUBLE(&v, double(element));
+        case simdjson::dom::element_type::DOUBLE : ZVAL_DOUBLE(&v, double(element));
             break;
         case simdjson::dom::element_type::BOOL :
             ZVAL_BOOL(&v, bool(element));
@@ -161,7 +118,7 @@ static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
             array_init(&arr);
 
             for (simdjson::dom::element child : simdjson::dom::array(element)) {
-                zval value = simdjsonphp::make_object(child);
+                zval value = create_object(child);
                 add_next_index_zval(&arr, &value);
             }
 
@@ -172,7 +129,7 @@ static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
             object_init(&obj);
 
             for (simdjson::dom::key_value_pair field : simdjson::dom::object(element)) {
-                zval value = simdjsonphp::make_object(field.value);
+                zval value = create_object(field.value);
                 add_property_zval_ex(&obj, field.key.data(), strlen(field.key.data()), &value);
             }
             v = obj;
@@ -183,35 +140,68 @@ static zval simdjsonphp::make_object(simdjson::dom::element element) /* {{{ */ {
     return v;
 }
 
+
 /* }}} */
 
-void cplus_simdjson_key_value(const char *json, const char *key, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
+bool cplus_simdjson_is_valid(const char *json, size_t len) /* {{{ */ {
+    simdjson::dom::element doc;
+    auto error = parser.parse(json, len).get(doc);
+    if (error) {
+        return false;
+    }
+    return true;
+}
 
-    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
-    simdjson::dom::element element;
+/* }}} */
 
-    try {
-        element = doc.at(key);
-    } catch (simdjson::simdjson_error &e) {
-        zend_throw_exception(spl_ce_RuntimeException, e.what(), 0 );
+void cplus_simdjson_parse(const char *json, size_t len, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
+    simdjson::dom::element doc;
+    auto error = build_parsed_json_cust(doc, json, len, true, depth);
+    if (error) {
+        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
         return;
     }
 
     if (assoc) {
-        *return_value = simdjsonphp::make_array(element);
+        *return_value = create_array(doc);
     } else {
-        *return_value = simdjsonphp::make_object(element);
+        *return_value = create_object(doc);
+    }
+}
+/* }}} */
+void cplus_simdjson_key_value(const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc,
+                              u_short depth) /* {{{ */ {
+    simdjson::dom::element doc;
+    simdjson::dom::element element;
+    auto error = build_parsed_json_cust(doc, json, len, true, depth);
+    if (error) {
+        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
+        return;
+    }
+
+    error = doc.at(key).get(element);
+
+    if (error) {
+        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
+        return;
+    }
+
+    if (assoc) {
+        *return_value = create_array(element);
+    } else {
+        *return_value = create_object(element);
     }
 }
 
 /* }}} */
 
-u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short depth) /* {{{ */ {
-
-    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
-
-    auto error = doc.at(key).error();
-
+u_short cplus_simdjson_key_exists(const char *json, size_t len, const char *key, u_short depth) /* {{{ */ {
+    simdjson::dom::element doc;
+    auto error = build_parsed_json_cust(doc, json, len, true, depth);
+    if (error) {
+        return SIMDJSON_PARSE_KEY_NOEXISTS;
+    }
+    error = doc.at(key).error();
     if (error) {
         return SIMDJSON_PARSE_KEY_NOEXISTS;
     }
@@ -221,30 +211,30 @@ u_short cplus_simdjson_key_exists(const char *json, const char *key, u_short dep
 /* }}} */
 
 
-void cplus_simdjson_key_count(const char *json, const char *key, zval *return_value, u_short depth) /* {{{ */ {
-
-    simdjson::dom::element doc = build_parsed_json_cust(reinterpret_cast<const uint8_t *>(json), strlen(json), true, depth);
+void cplus_simdjson_key_count(const char *json, size_t len, const char *key, zval *return_value, u_short depth) /* {{{ */ {
+    simdjson::dom::element doc;
     simdjson::dom::element element;
 
-    try {
-        element = doc.at(key);
-    } catch (simdjson::simdjson_error &e) {
-        zend_throw_exception(spl_ce_RuntimeException, e.what(), 0 );
+    auto error = build_parsed_json_cust(doc, json, len, true, depth);
+    if (error) {
+        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
+        return;
+    }
+
+    error = doc.at(key).get(element);
+    if (error) {
+        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
         return;
     }
 
     zval v;
-
     switch (element.type()) {
         //ASCII sort
-        case simdjson::dom::element_type::ARRAY :
-            ZVAL_LONG(&v, uint64_t(simdjson::dom::array(element).size()));
+        case simdjson::dom::element_type::ARRAY : ZVAL_LONG(&v, uint64_t(simdjson::dom::array(element).size()));
             break;
-        case simdjson::dom::element_type::OBJECT :
-            ZVAL_LONG(&v, uint64_t(simdjson::dom::object(element).size()));
+        case simdjson::dom::element_type::OBJECT : ZVAL_LONG(&v, uint64_t(simdjson::dom::object(element).size()));
             break;
-        default:
-            ZVAL_LONG(&v, 0);
+        default: ZVAL_LONG(&v, 0);
             break;
     }
     *return_value = v;
