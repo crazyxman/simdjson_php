@@ -39,16 +39,19 @@ ZEND_BEGIN_ARG_INFO(simdjson_key_value_arginfo, 2)
         ZEND_ARG_INFO(0, json)
         ZEND_ARG_INFO(0, key)
         ZEND_ARG_INFO(0, assoc)
+        ZEND_ARG_INFO(0, depth)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(simdjson_key_exists_arginfo, 2)
         ZEND_ARG_INFO(0, json)
         ZEND_ARG_INFO(0, key)
+        ZEND_ARG_INFO(0, depth)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(simdjson_key_count_arginfo, 2)
         ZEND_ARG_INFO(0, json)
         ZEND_ARG_INFO(0, key)
+        ZEND_ARG_INFO(0, depth)
 ZEND_END_ARG_INFO()
 
 extern bool cplus_simdjson_is_valid(const char *json, size_t len);
