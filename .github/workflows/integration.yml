@@ -116,7 +116,7 @@ jobs:
           ./configure
           sudo make
           sudo make install
-          sudo make test
+          sudo make test TESTS="--show-diff"
 
       - name: "Show"
         run: "php -dextension=simdjson.so --ri simdjson"
