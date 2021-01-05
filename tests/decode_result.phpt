@@ -64,7 +64,7 @@ object(stdClass)#1 (7) {
       ["httpRequests"]=>
       int(0)
       ["executionTime"]=>
-      float(0.00014734268188477)
+      float(0.0001473426818847)
       ["peakMemoryUsage"]=>
       int(2558)
     }
@@ -126,7 +126,7 @@ array(7) {
       ["httpRequests"]=>
       int(0)
       ["executionTime"]=>
-      float(0.00014734268188477)
+      float(0.0001473426818847)
       ["peakMemoryUsage"]=>
       int(2558)
     }
