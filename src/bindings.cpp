@@ -20,6 +20,9 @@
 #include "simdjson.h"
 #include "bindings.h"
 
+#if PHP_VERSION_ID < 70300
+#define zend_string_release_ex(s, persistent) zend_string_release((s))
+#endif
 // see https://github.com/simdjson/simdjson/blob/master/doc/performance.md#reusing-the-parser-for-maximum-efficiency
 simdjson::dom::parser parser;
 
@@ -49,7 +52,7 @@ static zval create_array(simdjson::dom::element element) /* {{{ */ {
     switch (element.type()) {
         //ASCII sort
         case simdjson::dom::element_type::STRING :
-            ZVAL_STRING(&v, std::string_view(element).data());
+            ZVAL_STRINGL(&v, element.get_c_str(), element.get_string_length());
             break;
         case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, int64_t(element));
             break;
@@ -63,27 +66,32 @@ static zval create_array(simdjson::dom::element element) /* {{{ */ {
         case simdjson::dom::element_type::NULL_VALUE :
             ZVAL_NULL(&v);
             break;
-        case simdjson::dom::element_type::ARRAY :
-            zval arr;
-            array_init(&arr);
+        case simdjson::dom::element_type::ARRAY : {
+            zend_array *arr;
+            array_init(&v);
+            arr = Z_ARR(v);
 
             for (simdjson::dom::element child : simdjson::dom::array(element)) {
                 zval value = create_array(child);
-                add_next_index_zval(&arr, &value);
+                zend_hash_next_index_insert(arr, &value);
             }
 
-            v = arr;
             break;
-        case simdjson::dom::element_type::OBJECT :
-            zval obj;
-            array_init(&obj);
+        }
+        case simdjson::dom::element_type::OBJECT : {
+            zend_array *arr;
+            array_init(&v);
+            arr = Z_ARR(v);
 
             for (simdjson::dom::key_value_pair field : simdjson::dom::object(element)) {
                 zval value = create_array(field.value);
-                add_assoc_zval_ex(&obj, field.key.data(), strlen(field.key.data()), &value);
+                /* TODO consider using zend_string_init_existing_interned in php 8.1+ to save memory and time freeing strings. */
+                zend_string *key = zend_string_init(field.key.data(), field.key.size(), 0);
+                zend_symtable_update(arr, key, &value);
+                zend_string_release_ex(key, 0);
             }
-            v = obj;
             break;
+        }
         default:
             break;
     }
@@ -99,7 +107,7 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
     switch (element.type()) {
         //ASCII sort
         case simdjson::dom::element_type::STRING :
-            ZVAL_STRING(&v, std::string_view(element).data());
+            ZVAL_STRINGL(&v, element.get_c_str(), element.get_string_length());
             break;
         case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, int64_t(element));
             break;
@@ -113,27 +121,39 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
         case simdjson::dom::element_type::NULL_VALUE :
             ZVAL_NULL(&v);
             break;
-        case simdjson::dom::element_type::ARRAY :
-            zval arr;
-            array_init(&arr);
+        case simdjson::dom::element_type::ARRAY : {
+            zend_array *arr;
+            array_init(&v);
+            arr = Z_ARR(v);
 
             for (simdjson::dom::element child : simdjson::dom::array(element)) {
                 zval value = create_object(child);
-                add_next_index_zval(&arr, &value);
+                zend_hash_next_index_insert(arr, &value);
             }
-
-            v = arr;
             break;
-        case simdjson::dom::element_type::OBJECT :
-            zval obj;
-            object_init(&obj);
+        }
+        case simdjson::dom::element_type::OBJECT : {
+            object_init(&v);
+#if PHP_VERSION_ID >= 80000
+            zend_object *obj = Z_OBJ(v);
+#endif
 
             for (simdjson::dom::key_value_pair field : simdjson::dom::object(element)) {
                 zval value = create_object(field.value);
-                add_property_zval_ex(&obj, field.key.data(), strlen(field.key.data()), &value);
+#if PHP_VERSION_ID >= 80000
+                /* TODO consider using zend_string_init_existing_interned in php 8.1+ to save memory and time freeing strings. */
+                zend_string *key = zend_string_init(field.key.data(), field.key.size(), 0);
+#if PHP_VERSION_ID >= 80000
+                obj->handlers->write_property(obj, key, &value, NULL);
+#endif
+                zend_string_release_ex(key, 0);
+#else
+                add_property_zval_ex(&v, field.key.data(), field.key.size(), &value);
+#endif
+                zval_ptr_dtor_nogc(&value);
             }
-            v = obj;
             break;
+        }
         default:
             break;
     }
