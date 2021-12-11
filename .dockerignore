@@ -26,6 +26,7 @@ modules/
 .libs/
 *.la
 *.lo
+*.dep
 php_test_results_*.txt
 tests/*
 !tests/*.phpt
