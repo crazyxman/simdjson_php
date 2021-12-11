@@ -1,6 +1,6 @@
 {
-    "name": "simdjson",
-    "description": "simdjson",
+    "name": "simdjson/bench",
+    "description": "simdjson benchmarker",
     "type": "project",
     "license": "BSD-3-Clause",
     "minimum-stability": "dev",
