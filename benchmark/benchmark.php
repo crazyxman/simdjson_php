@@ -11,22 +11,22 @@ foreach (glob(__DIR__.'/../jsonexamples/*.json') as $key=>$item) {
 
     $jsonString = file_get_contents($item);
 
-    $stime = microtime_float();
+    $stime = hrtime(true);
     simdjson_decode($jsonString, true);
-    $etime = microtime_float();
-    $simdd_time = bcsub($etime, $stime, 8);
+    $etime = hrtime(true);
+    $simdd_time = $etime - $stime;
 
 
-    $stime = microtime_float();
+    $stime = hrtime(true);
     simdjson_is_valid($jsonString);
-    $etime = microtime_float();
-    $simdi_time = bcsub($etime, $stime, 8);
+    $etime = hrtime(true);
+    $simdi_time = $etime - $stime;
 
 
-    $stime = microtime_float();
+    $stime = hrtime(true);
     json_decode($jsonString, true);
-    $etime = microtime_float();
-    $jsond_time = bcsub($etime, $stime, 8);
+    $etime = hrtime(true);
+    $jsond_time = $etime - $stime;
 
 
     $title.= basename($item)."|{$jsond_time}|{$simdd_time}|$simdi_time\n";
@@ -36,8 +36,9 @@ foreach (glob(__DIR__.'/../jsonexamples/*.json') as $key=>$item) {
 echo $title;
 
 
-function microtime_float()
-{
-    list($usec, $sec) = explode(" ", microtime());
-    return bcadd((float)$usec, (float)$sec, 8);
+if (!function_exists('hrtime')) {
+    function hrtime(bool $as_number = false)
+    {
+        return microtime($as_number);
+    }
 }
