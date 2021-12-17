@@ -7,16 +7,15 @@ simdjson_decode args test
 --FILE--
 <?php
 $reflection = new \ReflectionFunction('\simdjson_decode');
-var_dump((string) $reflection);
+echo $reflection;
 
 ?>
 --EXPECTF--
-string(204) "Function [ <internal:simdjson> function simdjson_decode ] {
+Function [ <internal:simdjson> function simdjson_decode ] {
 
   - Parameters [3] {
     Parameter #0 [ <required> $json ]
-    Parameter #1 [ <required> $assoc ]
-    Parameter #2 [ <required> $depth ]
+    Parameter #1 [ <optional> $assoc%S ]
+    Parameter #2 [ <optional> $depth%S ]
   }
 }
-"

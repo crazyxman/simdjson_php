@@ -25,33 +25,33 @@
 
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
 
-ZEND_BEGIN_ARG_INFO(simdjson_is_valid_arginfo, 1)
+ZEND_BEGIN_ARG_INFO_EX(simdjson_is_valid_arginfo, 0, 0, 1)
         ZEND_ARG_INFO(0, json)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(simdjson_decode_arginfo, 1)
+ZEND_BEGIN_ARG_INFO_EX(simdjson_decode_arginfo, 0, 0, 1)
         ZEND_ARG_INFO(0, json)
         ZEND_ARG_INFO(0, assoc)
         ZEND_ARG_INFO(0, depth)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(simdjson_key_value_arginfo, 2)
+ZEND_BEGIN_ARG_INFO_EX(simdjson_key_value_arginfo, 0, 0, 2)
         ZEND_ARG_INFO(0, json)
-        ZEND_ARG_INFO(0, key)
-        ZEND_ARG_INFO(0, assoc)
-        ZEND_ARG_INFO(0, depth)
+        ZEND_ARG_TYPE_INFO(0, key, IS_STRING, 0)
+        ZEND_ARG_TYPE_INFO(0, assoc, _IS_BOOL, 0)
+        ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(simdjson_key_exists_arginfo, 2)
+ZEND_BEGIN_ARG_INFO_EX(simdjson_key_exists_arginfo, 0, 0, 2)
         ZEND_ARG_INFO(0, json)
-        ZEND_ARG_INFO(0, key)
-        ZEND_ARG_INFO(0, depth)
+        ZEND_ARG_TYPE_INFO(0, key, IS_STRING, 0)
+        ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(simdjson_key_count_arginfo, 2)
+ZEND_BEGIN_ARG_INFO_EX(simdjson_key_count_arginfo, 0, 0, 2)
         ZEND_ARG_INFO(0, json)
-        ZEND_ARG_INFO(0, key)
-        ZEND_ARG_INFO(0, depth)
+        ZEND_ARG_TYPE_INFO(0, key, IS_STRING, 0)
+        ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
 extern bool cplus_simdjson_is_valid(const char *json, size_t len);

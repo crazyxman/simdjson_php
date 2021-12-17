@@ -143,6 +143,6 @@ jobs:
         run: |
           for FILE in $(find tests -name '*.diff'); do
             echo $FILE
-            cat FILE
+            cat $FILE
             echo
           done

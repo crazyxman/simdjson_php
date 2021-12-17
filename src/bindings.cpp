@@ -139,16 +139,22 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
 #endif
 
             for (simdjson::dom::key_value_pair field : simdjson::dom::object(element)) {
+                const char *data = field.key.data();
+                size_t size = field.key.size();
+                if (UNEXPECTED(data[0] == '\0') && UNEXPECTED(size > 0)) {
+                    if (!EG(exception)) {
+                        zend_throw_exception(spl_ce_RuntimeException, "Invalid property name", 0);
+                    }
+                    return v;
+                }
                 zval value = create_object(field.value);
 #if PHP_VERSION_ID >= 80000
                 /* TODO consider using zend_string_init_existing_interned in php 8.1+ to save memory and time freeing strings. */
-                zend_string *key = zend_string_init(field.key.data(), field.key.size(), 0);
-#if PHP_VERSION_ID >= 80000
+                zend_string *key = zend_string_init(data, size, 0);
                 obj->handlers->write_property(obj, key, &value, NULL);
-#endif
                 zend_string_release_ex(key, 0);
 #else
-                add_property_zval_ex(&v, field.key.data(), field.key.size(), &value);
+                add_property_zval_ex(&v, data, size, &value);
 #endif
                 zval_ptr_dtor_nogc(&value);
             }
