@@ -26,8 +26,14 @@
 // see https://github.com/simdjson/simdjson/blob/master/doc/performance.md#reusing-the-parser-for-maximum-efficiency
 simdjson::dom::parser parser;
 
-WARN_UNUSED
-simdjson::error_code
+static inline simdjson::simdjson_result<simdjson::dom::element>
+get_key_with_optional_prefix(simdjson::dom::element &doc, std::string_view json_pointer)
+{
+    auto std_pointer = (json_pointer.empty() ? "" : "/") + std::string(json_pointer.begin(), json_pointer.end());
+    return doc.at_pointer(std_pointer);
+}
+
+static simdjson::error_code
 build_parsed_json_cust(simdjson::dom::element &doc, const char *buf, size_t len, bool realloc_if_needed,
                        u_short depth = simdjson::DEFAULT_MAX_DEPTH) {
     auto error = parser.allocate(len, depth);
@@ -205,7 +211,7 @@ void cplus_simdjson_key_value(const char *json, size_t len, const char *key, zva
         return;
     }
 
-    error = doc.at(key).get(element);
+    error = get_key_with_optional_prefix(doc, key).get(element);
 
     if (error) {
         zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
@@ -227,7 +233,7 @@ u_short cplus_simdjson_key_exists(const char *json, size_t len, const char *key,
     if (error) {
         return SIMDJSON_PARSE_KEY_NOEXISTS;
     }
-    error = doc.at(key).error();
+    error = get_key_with_optional_prefix(doc, key).error();
     if (error) {
         return SIMDJSON_PARSE_KEY_NOEXISTS;
     }
@@ -247,7 +253,7 @@ void cplus_simdjson_key_count(const char *json, size_t len, const char *key, zva
         return;
     }
 
-    error = doc.at(key).get(element);
+    error = get_key_with_optional_prefix(doc, key).get(element);
     if (error) {
         zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
         return;
