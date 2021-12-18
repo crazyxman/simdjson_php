@@ -67,11 +67,19 @@ static zval create_array(simdjson::dom::element element) /* {{{ */ {
             ZVAL_NULL(&v);
             break;
         case simdjson::dom::element_type::ARRAY : {
+            const auto json_array = simdjson::dom::array(element);
+#if PHP_VERSION_ID >= 70300
+            if (json_array.size() == 0) {
+                /* Reuse the immutable empty array to save memory */
+                ZVAL_EMPTY_ARRAY(&v);
+                break;
+            }
+#endif
             zend_array *arr;
             array_init(&v);
             arr = Z_ARR(v);
 
-            for (simdjson::dom::element child : simdjson::dom::array(element)) {
+            for (simdjson::dom::element child : json_array) {
                 zval value = create_array(child);
                 zend_hash_next_index_insert(arr, &value);
             }
@@ -79,11 +87,19 @@ static zval create_array(simdjson::dom::element element) /* {{{ */ {
             break;
         }
         case simdjson::dom::element_type::OBJECT : {
+            const auto json_object = simdjson::dom::object(element);
+#if PHP_VERSION_ID >= 70300
+            if (json_object.size() == 0) {
+                /* Reuse the immutable empty array to save memory */
+                ZVAL_EMPTY_ARRAY(&v);
+                break;
+            }
+#endif
             zend_array *arr;
             array_init(&v);
             arr = Z_ARR(v);
 
-            for (simdjson::dom::key_value_pair field : simdjson::dom::object(element)) {
+            for (simdjson::dom::key_value_pair field : json_object) {
                 zval value = create_array(field.value);
                 /* TODO consider using zend_string_init_existing_interned in php 8.1+ to save memory and time freeing strings. */
                 zend_string *key = zend_string_init(field.key.data(), field.key.size(), 0);
@@ -122,11 +138,19 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
             ZVAL_NULL(&v);
             break;
         case simdjson::dom::element_type::ARRAY : {
+            const auto json_array = simdjson::dom::array(element);
+#if PHP_VERSION_ID >= 70300
+            if (json_array.size() == 0) {
+                /* Reuse the immutable empty array to save memory */
+                ZVAL_EMPTY_ARRAY(&v);
+                break;
+            }
+#endif
             zend_array *arr;
             array_init(&v);
             arr = Z_ARR(v);
 
-            for (simdjson::dom::element child : simdjson::dom::array(element)) {
+            for (simdjson::dom::element child : json_array) {
                 zval value = create_object(child);
                 zend_hash_next_index_insert(arr, &value);
             }
