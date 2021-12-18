@@ -80,19 +80,6 @@ jobs:
       - name: "Show"
         run: "docker run --rm simdjsontest php --ri simdjson"
 
-  PHP70-alpine:
-    name: PHP 7.0 Alpine 3.7
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v2
-
-      - name: "Build extension"
-        run: "docker build -t simdjsontest -f docker_php7.0-alpine ."
-
-      - name: "Show"
-        run: "docker run --rm simdjsontest php --ri simdjson"
-
   Ubuntu:
     strategy:
       fail-fast: false
