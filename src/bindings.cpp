@@ -35,7 +35,7 @@ get_key_with_optional_prefix(simdjson::dom::element &doc, std::string_view json_
 
 static simdjson::error_code
 build_parsed_json_cust(simdjson::dom::element &doc, const char *buf, size_t len, bool realloc_if_needed,
-                       u_short depth = simdjson::DEFAULT_MAX_DEPTH) {
+                       size_t depth = simdjson::DEFAULT_MAX_DEPTH) {
     auto error = parser.allocate(len, depth);
 
     if (error) {
@@ -171,7 +171,8 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
             for (simdjson::dom::key_value_pair field : simdjson::dom::object(element)) {
                 const char *data = field.key.data();
                 size_t size = field.key.size();
-                if (UNEXPECTED(data[0] == '\0') && UNEXPECTED(size > 0)) {
+				/* PHP 7.1 allowed using the empty string as a property of an object */
+                if (UNEXPECTED(data[0] == '\0') && (PHP_VERSION_ID < 70100 || UNEXPECTED(size > 0))) {
                     if (!EG(exception)) {
                         zend_throw_exception(spl_ce_RuntimeException, "Invalid property name", 0);
                     }
@@ -210,7 +211,7 @@ bool cplus_simdjson_is_valid(const char *json, size_t len) /* {{{ */ {
 
 /* }}} */
 
-void cplus_simdjson_parse(const char *json, size_t len, zval *return_value, unsigned char assoc, u_short depth) /* {{{ */ {
+void cplus_simdjson_parse(const char *json, size_t len, zval *return_value, unsigned char assoc, size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     auto error = build_parsed_json_cust(doc, json, len, true, depth);
     if (error) {
@@ -226,7 +227,7 @@ void cplus_simdjson_parse(const char *json, size_t len, zval *return_value, unsi
 }
 /* }}} */
 void cplus_simdjson_key_value(const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc,
-                              u_short depth) /* {{{ */ {
+                              size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     simdjson::dom::element element;
     auto error = build_parsed_json_cust(doc, json, len, true, depth);
@@ -251,7 +252,7 @@ void cplus_simdjson_key_value(const char *json, size_t len, const char *key, zva
 
 /* }}} */
 
-u_short cplus_simdjson_key_exists(const char *json, size_t len, const char *key, u_short depth) /* {{{ */ {
+u_short cplus_simdjson_key_exists(const char *json, size_t len, const char *key, size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     auto error = build_parsed_json_cust(doc, json, len, true, depth);
     if (error) {
@@ -267,7 +268,7 @@ u_short cplus_simdjson_key_exists(const char *json, size_t len, const char *key,
 /* }}} */
 
 
-void cplus_simdjson_key_count(const char *json, size_t len, const char *key, zval *return_value, u_short depth) /* {{{ */ {
+void cplus_simdjson_key_count(const char *json, size_t len, const char *key, zval *return_value, size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     simdjson::dom::element element;
 

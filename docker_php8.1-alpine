@@ -14,6 +14,8 @@ ENV PHPIZE_DEPS \
     git \
     re2c
 
+ENV REPORT_EXIT_STATUS=1
+
 RUN set -xe \
     && apk add --no-cache --virtual .build-deps \
         $PHPIZE_DEPS \

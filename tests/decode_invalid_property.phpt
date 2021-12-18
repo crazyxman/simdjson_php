@@ -1,5 +1,7 @@
 --TEST--
 simdjson_decode throws exception if json object has invalid property
+--SKIPIF--
+<?php if (PHP_VERSION_ID < 70100) { echo "skip empty string not allowed as property in php 7.0\n"; } ?>
 --FILE--
 <?php
 $json = '{"key":[1],"\u0000*\u0000protected": "test"}';
