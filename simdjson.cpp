@@ -56,13 +56,13 @@ ZEND_END_ARG_INFO()
 
 extern bool cplus_simdjson_is_valid(const char *json, size_t len);
 
-extern void cplus_simdjson_parse(const char *json, size_t len, zval *return_value, unsigned char assoc, u_short depth);
+extern void cplus_simdjson_parse(const char *json, size_t len, zval *return_value, unsigned char assoc, size_t depth);
 
-extern void cplus_simdjson_key_value(const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc, u_short depth);
+extern void cplus_simdjson_key_value(const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc, size_t depth);
 
-extern u_short cplus_simdjson_key_exists(const char *json, size_t len, const char *key, u_short depth);
+extern u_short cplus_simdjson_key_exists(const char *json, size_t len, const char *key, size_t depth);
 
-extern void cplus_simdjson_key_count(const char *json, size_t len, const char *key, zval *return_value, u_short depth);
+extern void cplus_simdjson_key_count(const char *json, size_t len, const char *key, zval *return_value, size_t depth);
 
 PHP_FUNCTION (simdjson_is_valid) {
     zend_string *json = NULL;
@@ -80,7 +80,11 @@ PHP_FUNCTION (simdjson_decode) {
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|bl", &json, &assoc, &depth) == FAILURE) {
         return;
     }
-    cplus_simdjson_parse(ZSTR_VAL(json), ZSTR_LEN(json), return_value, assoc, depth + 1);
+    if (UNEXPECTED(depth <= 0)) {
+        php_error_docref(NULL, E_WARNING, "Depth must be greater than zero");
+        RETURN_NULL();
+    }
+    cplus_simdjson_parse(ZSTR_VAL(json), ZSTR_LEN(json), return_value, assoc, depth);
 }
 
 PHP_FUNCTION (simdjson_key_value) {
@@ -92,9 +96,13 @@ PHP_FUNCTION (simdjson_key_value) {
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|bl", &json, &key, &assoc, &depth) == FAILURE) {
         return;
     }
+    if (depth <= 0) {
+        php_error_docref(NULL, E_WARNING, "Depth must be greater than zero");
+        RETURN_NULL();
+    }
     if (IS_STRING == Z_TYPE_P(json)) {
         zend_string *zd_json = Z_STR_P(json);
-        cplus_simdjson_key_value(ZSTR_VAL(zd_json), ZSTR_LEN(zd_json), ZSTR_VAL(key), return_value, assoc, depth + 1);
+        cplus_simdjson_key_value(ZSTR_VAL(zd_json), ZSTR_LEN(zd_json), ZSTR_VAL(key), return_value, assoc, depth);
     } else {
         php_error_docref(NULL, E_WARNING, "expects parameter 1 to be string");
     }
@@ -105,12 +113,16 @@ PHP_FUNCTION (simdjson_key_count) {
     zval *json = NULL;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
     zend_string *key = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|bl", &json, &key, &depth) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|l", &json, &key, &depth) == FAILURE) {
         return;
+    }
+    if (UNEXPECTED(depth <= 0)) {
+        php_error_docref(NULL, E_WARNING, "Depth must be greater than zero");
+        RETURN_NULL();
     }
     if (IS_STRING == Z_TYPE_P(json)) {
         zend_string *zd_json = Z_STR_P(json);
-        cplus_simdjson_key_count(ZSTR_VAL(zd_json), ZSTR_LEN(zd_json), ZSTR_VAL(key), return_value, depth + 1);
+        cplus_simdjson_key_count(ZSTR_VAL(zd_json), ZSTR_LEN(zd_json), ZSTR_VAL(key), return_value, depth);
     } else {
         php_error_docref(NULL, E_WARNING, "expects parameter 1 to be string");
     }
@@ -124,10 +136,14 @@ PHP_FUNCTION (simdjson_key_exists) {
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|l", &json, &key, &depth) == FAILURE) {
         return;
     }
+    if (UNEXPECTED(depth <= 0)) {
+        php_error_docref(NULL, E_WARNING, "Depth must be greater than zero");
+        return;
+    }
     u_short stats = SIMDJSON_PARSE_FAIL;
     if (IS_STRING == Z_TYPE_P(json)) {
         zend_string *zd_json = Z_STR_P(json);
-        stats = cplus_simdjson_key_exists(ZSTR_VAL(zd_json), ZSTR_LEN(zd_json), ZSTR_VAL(key), depth + 1);
+        stats = cplus_simdjson_key_exists(ZSTR_VAL(zd_json), ZSTR_LEN(zd_json), ZSTR_VAL(key), depth);
     } else {
         php_error_docref(NULL, E_WARNING, "expects parameter 1 to be string");
     }

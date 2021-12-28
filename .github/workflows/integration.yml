@@ -110,6 +110,7 @@ jobs:
       - name: "Build extension"
         env:
           NO_INTERACTION: true
+          REPORT_EXIT_STATUS: 1
         run: |
           php-config --extension-dir
           phpize
