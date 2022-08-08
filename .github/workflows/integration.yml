@@ -2,6 +2,19 @@ name: Testing simdjson PHP extension
 on: [push, pull_request]
 
 jobs:
+  PHP82-alpine:
+    name: PHP 8.2 Alpine 3.16
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "Build extension"
+        run: "docker build -t simdjsontest -f docker_php8.2-alpine ."
+
+      - name: "Show"
+        run: "docker run --rm simdjsontest php --ri simdjson"
+
   PHP81-alpine:
     name: PHP 8.1 Alpine 3.15
     runs-on: ubuntu-latest

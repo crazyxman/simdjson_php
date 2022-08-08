@@ -1,0 +1,27 @@
+FROM php:8.2.0beta2-cli-alpine3.16
+
+COPY . /tmp/simdjson
+
+# persistent / runtime deps
+ENV PHPIZE_DEPS \
+    autoconf \
+    g++ \
+    gcc \
+    make \
+    pkgconf \
+    git \
+    re2c
+
+ENV REPORT_EXIT_STATUS=1
+
+RUN set -xe \
+    && apk add --no-cache --virtual .build-deps \
+        $PHPIZE_DEPS \
+    && cd /tmp/simdjson \
+        && phpize  \
+        && ./configure  \
+        && make  \
+        && make install \
+        && make test \
+        && rm -rf /tmp/simdjson \
+        && echo "extension=simdjson.so" > /usr/local/etc/php/conf.d/simdjson.ini
