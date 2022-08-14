@@ -13,6 +13,8 @@
 
 #include "simdjson.h"
 
+simdjson::dom::parser* cplus_simdjson_create_parser(void);
+void cplus_simdjson_free_parser(simdjson::dom::parser* parser);
 bool cplus_simdjson_is_valid(const char *json, size_t len);
 void cplus_simdjson_parse(const char *json, size_t len, zval *return_value, unsigned char assoc, size_t depth);
 void cplus_simdjson_key_value(const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc, size_t depth);
