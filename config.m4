@@ -25,10 +25,10 @@ if test "$PHP_SIMDJSON" != "no"; then
 
   AC_DEFINE(HAVE_SIMDJSON, 1, [whether simdjson is enabled])
   PHP_NEW_EXTENSION(simdjson, [
-      simdjson.cpp                        \
+      php_simdjson.cpp                    \
       src/bindings.cpp                    \
       src/simdjson.cpp],
-    $ext_shared,, "-std=c++17")
+    $ext_shared,, "-std=c++17 -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1", cxx)
 
   PHP_INSTALL_HEADERS([ext/simdjson], [php_simdjson.h])
   PHP_ADD_MAKEFILE_FRAGMENT

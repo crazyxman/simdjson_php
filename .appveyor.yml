@@ -1,0 +1,134 @@
+# Based on php-ast's appveyor config.
+# See https://github.com/nikic/php-ast/blob/master/.appveyor.yml
+# This tests against PHP 7.0+
+# Author: Tyson Andre
+
+version: '{branch}.{build}'
+
+branches:
+        only:
+                - master
+
+clone_folder:  c:\projects\simdjson
+
+install:
+        ps: |
+                if (-not (Test-Path c:\build-cache)) {
+                        mkdir c:\build-cache
+                }
+                $bname = 'php-sdk-' + $env:BIN_SDK_VER + '.zip'
+                if (-not (Test-Path c:\build-cache\$bname)) {
+                        Invoke-WebRequest "https://github.com/OSTC/php-sdk-binary-tools/archive/$bname" -OutFile "c:\build-cache\$bname"
+                }
+                $dname0 = 'php-sdk-binary-tools-php-sdk-' + $env:BIN_SDK_VER
+                $dname1 = 'php-sdk-' + $env:BIN_SDK_VER
+                if (-not (Test-Path c:\build-cache\$dname1)) {
+                        7z x c:\build-cache\$bname -oc:\build-cache
+                        move c:\build-cache\$dname0 c:\build-cache\$dname1
+                }
+
+cache:
+        c:\build-cache -> .appveyor.yml
+
+environment:
+        BIN_SDK_VER: 2.2.0
+        # Windows builds fail before PHP 7.3.
+        matrix:
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+                  ARCH: x86
+                  VC: vs16
+                  PHP_VER: 8.2.0beta2
+                  TS: 1
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+                  ARCH: x64
+                  VC: vs16
+                  PHP_VER: 8.2.0beta2
+                  TS: 0
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+                  ARCH: x64
+                  VC: vs16
+                  PHP_VER: 8.1.9
+                  TS: 0
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+                  ARCH: x64
+                  VC: vs16
+                  PHP_VER: 8.0.22
+                  TS: 0
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+                  ARCH: x64
+                  VC: vc15
+                  PHP_VER: 7.3.32
+                  TS: 1
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+                  ARCH: x64
+                  VC: vc15
+                  PHP_VER: 7.4.30
+                  TS: 1
+
+build_script:
+        ps: |
+                # Install the php extension development tools
+                $ts_part = ''
+                if ('0' -eq $env:TS) { $ts_part = '-nts' }
+                $bname = 'php-devel-pack-' + $env:PHP_VER + $ts_part + '-Win32-' + $env:VC.toUpper() + '-' + $env:ARCH + '.zip'
+                $urls = @(
+                        "https://windows.php.net/downloads/releases/archives/$bname",
+                        "https://windows.php.net/downloads/releases/$bname",
+                        "https://windows.php.net/downloads/qa/$bname",
+                        "https://windows.php.net/downloads/qa/archives/$bname"
+                )
+                foreach ($url in $urls) {
+                        Invoke-WebRequest $url -OutFile "c:\build-cache\$bname"
+                        if (Test-Path c:\build-cache\$bname) {
+                                break;
+                        }
+                }
+                $dname0 = 'php-' + $env:PHP_VER + '-devel-' + $env:VC.toUpper() + '-' + $env:ARCH
+                $dname1 = 'php-' + $env:PHP_VER + $ts_part + '-devel-' + $env:VC.toUpper() + '-' + $env:ARCH
+                if (-not (Test-Path c:\build-cache\$dname1)) {
+                        7z x c:\build-cache\$bname -oc:\build-cache
+                        move c:\build-cache\$dname0 c:\build-cache\$dname1
+                }
+                $ts_part = ''
+                if ('0' -eq $env:TS) { $ts_part = '-nts' }
+
+                # Install the php binary
+                $bname = 'php-' + $env:PHP_VER + $ts_part + '-Win32-' + $env:VC.toUpper() + '-' + $env:ARCH + '.zip'
+                $urls = @(
+                        "https://windows.php.net/downloads/releases/archives/$bname",
+                        "https://windows.php.net/downloads/releases/$bname",
+                        "https://windows.php.net/downloads/qa/$bname",
+                        "https://windows.php.net/downloads/qa/archives/$bname"
+                )
+                foreach ($url in $urls) {
+                        Invoke-WebRequest $url -OutFile "c:\build-cache\$bname"
+                        if (Test-Path c:\build-cache\$bname) {
+                                break;
+                        }
+                }
+                $dname = 'php-' + $env:PHP_VER + $ts_part + '-' + $env:VC.toUpper() + '-' + $env:ARCH
+                if (-not (Test-Path c:\build-cache\$dname)) {
+                        7z x c:\build-cache\$bname -oc:\build-cache\$dname
+                }
+                cd c:\projects\simdjson
+                $env:PATH = 'c:\build-cache\' + $dname1 + ';' + $env:PATH
+                $env:PATH = 'c:\build-cache\' + $dname + ';' + $env:PATH
+                #echo "@echo off" | Out-File -Encoding "ASCII" task.bat
+                #echo "" | Out-File -Encoding "ASCII" -Append task.bat
+                echo "" | Out-File -Encoding "ASCII" task.bat
+                echo "call phpize 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
+
+                $cmd = 'call configure --enable-simdjson --with-prefix=c:\build-cache\' + $dname + ' 2>&1'
+                echo $cmd | Out-File -Encoding "ASCII" -Append task.bat
+                echo "set REPORT_EXIT_STATUS=1" | Out-File -Encoding "ASCII" -Append task.bat
+                echo "set NO_INTERACTION=1" | Out-File -Encoding "ASCII" -Append task.bat
+                echo "set TEST_PHP_ARGS=--show-diff" | Out-File -Encoding "ASCII" -Append task.bat
+                $cmd = 'set TEST_PHP_EXECUTABLE=c:\build-cache\' + $dname + '\php.exe'
+                echo $cmd | Out-File -Encoding "ASCII" -Append task.bat
+                echo "nmake /nologo 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
+                echo "nmake test /nologo 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
+                echo "exit %errorlevel%" | Out-File -Encoding "ASCII" -Append task.bat
+                $here = (Get-Item -Path "." -Verbose).FullName
+                $runner = 'c:\build-cache\php-sdk-' + $env:BIN_SDK_VER + '\phpsdk' + '-' + $env:VC + '-' + $env:ARCH + '.bat'
+                $task = $here + '\task.bat'
+                & $runner -t $task

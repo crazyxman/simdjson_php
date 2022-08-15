@@ -11,6 +11,7 @@
   +----------------------------------------------------------------------+
 */
 
+extern "C" {
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -21,6 +22,8 @@
 #include "ext/standard/info.h"
 
 #include "php_simdjson.h"
+}
+
 #include "src/bindings.h"
 
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
@@ -171,7 +174,9 @@ zend_function_entry simdjson_functions[] = {
 /** {{{ PHP_GINIT_FUNCTION
 */
 PHP_GINIT_FUNCTION (simdjson) {
-
+#if defined(COMPILE_DL_SIMDJSON) && defined(ZTS)
+ZEND_TSRMLS_CACHE_UPDATE();
+#endif
 }
 /* }}} */
 
@@ -219,13 +224,6 @@ PHP_MINFO_FUNCTION (simdjson) {
 }
 /* }}} */
 
-/** {{{ DL support
- */
-#ifdef COMPILE_DL_SIMDJSON
-ZEND_GET_MODULE(simdjson)
-#endif
-/* }}} */
-
 /** {{{ module depends
  */
 zend_module_dep simdjson_deps[] = {
@@ -252,4 +250,15 @@ zend_module_entry simdjson_module_entry = {
     NULL,
     STANDARD_MODULE_PROPERTIES_EX
 };
+/* }}} */
+
+/** {{{ DL support
+ */
+#ifdef COMPILE_DL_SIMDJSON
+#ifdef ZTS
+ZEND_TSRMLS_CACHE_DEFINE();
+#endif
+
+ZEND_GET_MODULE(simdjson)
+#endif
 /* }}} */

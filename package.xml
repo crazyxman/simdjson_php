@@ -36,7 +36,7 @@
    <file name="CREDITS" role="doc"/>
    <file name="LICENSE" role="doc"/>
    <file name="php_simdjson.h" role="src"/>
-   <file name="simdjson.cpp" role="src"/>
+   <file name="php_simdjson.cpp" role="src"/>
    <file name="README.md" role="doc"/>
    <dir name="src">
     <file name="bindings.cpp" role="src"/>

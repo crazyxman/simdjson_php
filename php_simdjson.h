@@ -15,6 +15,7 @@
 #define PHP_SIMDJSON_H
 
 extern zend_module_entry simdjson_module_entry;
+#define phpext_simdjson_ptr &simdjson_module_entry
 
 #define PHP_SIMDJSON_VERSION                  "1.0.0"
 #define SIMDJSON_SUPPORT_URL                  "https://github.com/crazyxman/simdjson_php"
@@ -40,5 +41,11 @@ PHP_MSHUTDOWN_FUNCTION(simdjson);
 PHP_RINIT_FUNCTION(simdjson);
 PHP_RSHUTDOWN_FUNCTION(simdjson);
 PHP_MINFO_FUNCTION(simdjson);
+
+#ifdef ZTS
+#ifdef COMPILE_DL_SIMDJSON
+ZEND_TSRMLS_CACHE_EXTERN()
+#endif
+#endif
 
 #endif
