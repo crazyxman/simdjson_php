@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
+ <name>simdjson</name>
+ <channel>pecl.php.net</channel>
+ <summary>Provides faster json decoding through simdjson bindings for PHP</summary>
+ <description>Provides faster json decoding through simdjson bindings for PHP (Single Instruction, Multiple Data)</description>
+ <lead>
+  <name>Tyson Andre</name>
+  <user>tandre</user>
+  <email>tandre@php.net</email>
+  <active>yes</active>
+ </lead>
+ <lead>
+  <name>Jinxi Wang</name>
+  <user></user>
+  <email>1054636713@qq.com</email>
+  <active>yes</active>
+ </lead>
+ <date>2022-08-15</date>
+ <version>
+  <release>1.0.0</release>
+  <api>1.0.0</api>
+ </version>
+ <stability>
+  <release>stable</release>
+  <api>stable</api>
+ </stability>
+ <license uri="https://www.php.net/license/3_0.txt">PHP License</license>
+ <notes>
+* Initial release
+ </notes>
+ <contents>
+  <dir name="/">
+   <file name="CMakeLists.txt" role="src"/>
+   <file name="config.m4" role="src"/>
+   <file name="CREDITS" role="doc"/>
+   <file name="LICENSE" role="doc"/>
+   <file name="php_simdjson.h" role="src"/>
+   <file name="simdjson.cpp" role="src"/>
+   <file name="README.md" role="doc"/>
+   <dir name="src">
+    <file name="bindings.cpp" role="src"/>
+    <file name="bindings.h" role="src"/>
+    <file name="simdjson.cpp" role="src"/>
+    <file name="simdjson.h" role="src"/>
+   </dir>
+   <dir name="tests">
+    <file name="decode_args.phpt" role="test"/>
+    <file name="decode_exception.phpt" role="test"/>
+    <file name="decode_invalid_property.phpt" role="test"/>
+    <file name="decode_result.phpt" role="test"/>
+    <file name="depth.phpt" role="test"/>
+    <file name="is_valid.phpt" role="test"/>
+    <file name="is_valid_args.phpt" role="test"/>
+    <file name="key_count.phpt" role="test"/>
+    <file name="key_count_args.phpt" role="test"/>
+    <file name="key_count_exception.phpt" role="test"/>
+    <file name="key_exists.phpt" role="test"/>
+    <file name="key_exists_args.phpt" role="test"/>
+    <file name="key_value_args.phpt" role="test"/>
+    <file name="key_value_deep_string.phpt" role="test"/>
+    <file name="key_value_exception.phpt" role="test"/>
+    <file name="key_value_int.phpt" role="test"/>
+    <file name="key_value_result.phpt" role="test"/>
+    <file name="_files/result.json" role="test"/>
+   </dir>
+  </dir>
+ </contents>
+ <dependencies>
+  <required>
+   <php>
+    <min>7.0.0</min>
+   </php>
+   <pearinstaller>
+    <min>1.4.3</min>
+   </pearinstaller>
+  </required>
+ </dependencies>
+ <providesextension>simdjson</providesextension>
+ <extsrcrelease/>
+ <changelog>
+  <release>
+   <date>2022-08-15</date>
+   <time>00:00:00</time>
+   <version>
+    <release>1.0.0</release>
+    <api>1.0.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="http://www.php.net/license/3_0.txt">PHP License</license>
+   <notes>
+* Initial release
+   </notes>
+  </release>
+ </changelog>
+</package>

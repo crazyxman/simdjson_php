@@ -1,10 +1,4 @@
-dnl $Id$
 dnl config.m4 for extension simdjson
-
-sinclude(./autoconf/pecl.m4)
-sinclude(./autoconf/php-executable.m4)
-
-PECL_INIT([simdjson])
 
 PHP_ARG_ENABLE(simdjson, whether to enable simdjson, [ --enable-simdjson   Enable simdjson])
 
@@ -30,12 +24,13 @@ if test "$PHP_SIMDJSON" != "no"; then
   fi
 
   AC_DEFINE(HAVE_SIMDJSON, 1, [whether simdjson is enabled])
-  PHP_NEW_EXTENSION(simdjson,
+  PHP_NEW_EXTENSION(simdjson, [
       simdjson.cpp                        \
       src/bindings.cpp                    \
-      src/simdjson.cpp,
-    $ext_shared,, -std=c++17, cxx)
+      src/simdjson.cpp],
+    $ext_shared,, "-std=c++17")
 
-  PHP_ADD_MAKEFILE_FRAGMENT
   PHP_INSTALL_HEADERS([ext/simdjson], [php_simdjson.h])
+  PHP_ADD_MAKEFILE_FRAGMENT
+  PHP_ADD_BUILD_DIR(src, 1)
 fi
