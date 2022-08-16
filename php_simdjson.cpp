@@ -220,6 +220,8 @@ PHP_MINFO_FUNCTION (simdjson) {
 
     php_info_print_table_row(2, "Version", PHP_SIMDJSON_VERSION);
     php_info_print_table_row(2, "Support", SIMDJSON_SUPPORT_URL);
+    php_info_print_table_row(2, "Implementation", simdjson::active_implementation->description().c_str());
+
     php_info_print_table_end();
 }
 /* }}} */
