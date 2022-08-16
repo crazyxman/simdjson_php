@@ -62,6 +62,7 @@
     <file name="key_value_exception.phpt" role="test"/>
     <file name="key_value_int.phpt" role="test"/>
     <file name="key_value_result.phpt" role="test"/>
+    <file name="uint64_overflow.phpt" role="test"/>
     <file name="_files/result.json" role="test"/>
    </dir>
   </dir>
