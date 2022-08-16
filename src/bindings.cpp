@@ -116,8 +116,7 @@ static zval create_array(simdjson::dom::element element) /* {{{ */ {
             }
             break;
         }
-        default:
-            break;
+        EMPTY_SWITCH_DEFAULT_CASE();
     }
 
     return v;
@@ -191,8 +190,7 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
             }
             break;
         }
-        default:
-            break;
+        EMPTY_SWITCH_DEFAULT_CASE();
     }
     return v;
 }
