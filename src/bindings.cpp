@@ -12,10 +12,12 @@
 */
 
 
+extern "C" {
 #include <ext/spl/spl_exceptions.h>
 #include <Zend/zend_exceptions.h>
 #include "php.h"
 #include "php_simdjson.h"
+}
 
 #include "simdjson.h"
 #include "bindings.h"
@@ -58,22 +60,22 @@ static zval create_array(simdjson::dom::element element) /* {{{ */ {
     switch (element.type()) {
         //ASCII sort
         case simdjson::dom::element_type::STRING :
-            ZVAL_STRINGL(&v, element.get_c_str(), element.get_string_length());
+            ZVAL_STRINGL(&v, element.get_c_str().value_unsafe(), element.get_string_length().value_unsafe());
             break;
-        case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, int64_t(element));
+        case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, element.get_int64().value_unsafe());
             break;
-        case simdjson::dom::element_type::UINT64 : ZVAL_LONG(&v, uint64_t(element));
+        case simdjson::dom::element_type::UINT64 : ZVAL_LONG(&v, element.get_uint64().value_unsafe());
             break;
-        case simdjson::dom::element_type::DOUBLE : ZVAL_DOUBLE(&v, double(element));
+        case simdjson::dom::element_type::DOUBLE : ZVAL_DOUBLE(&v, element.get_double().value_unsafe());
             break;
         case simdjson::dom::element_type::BOOL :
-            ZVAL_BOOL(&v, bool(element));
+            ZVAL_BOOL(&v, element.get_bool().value_unsafe());
             break;
         case simdjson::dom::element_type::NULL_VALUE :
             ZVAL_NULL(&v);
             break;
         case simdjson::dom::element_type::ARRAY : {
-            const auto json_array = simdjson::dom::array(element);
+            const auto json_array = element.get_array().value_unsafe();
 #if PHP_VERSION_ID >= 70300
             if (json_array.size() == 0) {
                 /* Reuse the immutable empty array to save memory */
@@ -93,7 +95,7 @@ static zval create_array(simdjson::dom::element element) /* {{{ */ {
             break;
         }
         case simdjson::dom::element_type::OBJECT : {
-            const auto json_object = simdjson::dom::object(element);
+            const auto json_object = element.get_object().value_unsafe();
 #if PHP_VERSION_ID >= 70300
             if (json_object.size() == 0) {
                 /* Reuse the immutable empty array to save memory */
@@ -129,22 +131,19 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
     switch (element.type()) {
         //ASCII sort
         case simdjson::dom::element_type::STRING :
-            ZVAL_STRINGL(&v, element.get_c_str(), element.get_string_length());
+            ZVAL_STRINGL(&v, element.get_c_str().value_unsafe(), element.get_string_length().value_unsafe());
             break;
-        case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, int64_t(element));
+        case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, element.get_int64().value_unsafe());
             break;
-        case simdjson::dom::element_type::UINT64 : ZVAL_LONG(&v, uint64_t(element));
+        case simdjson::dom::element_type::UINT64 : ZVAL_LONG(&v, element.get_uint64().value_unsafe());
             break;
-        case simdjson::dom::element_type::DOUBLE : ZVAL_DOUBLE(&v, double(element));
+        case simdjson::dom::element_type::DOUBLE : ZVAL_DOUBLE(&v, element.get_double().value_unsafe());
             break;
         case simdjson::dom::element_type::BOOL :
-            ZVAL_BOOL(&v, bool(element));
-            break;
-        case simdjson::dom::element_type::NULL_VALUE :
-            ZVAL_NULL(&v);
+            ZVAL_BOOL(&v, element.get_bool().value_unsafe());
             break;
         case simdjson::dom::element_type::ARRAY : {
-            const auto json_array = simdjson::dom::array(element);
+            const auto json_array = element.get_array().value_unsafe();
 #if PHP_VERSION_ID >= 70300
             if (json_array.size() == 0) {
                 /* Reuse the immutable empty array to save memory */
@@ -163,12 +162,13 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
             break;
         }
         case simdjson::dom::element_type::OBJECT : {
+            const auto json_object = element.get_object().value_unsafe();
             object_init(&v);
 #if PHP_VERSION_ID >= 80000
             zend_object *obj = Z_OBJ(v);
 #endif
 
-            for (simdjson::dom::key_value_pair field : simdjson::dom::object(element)) {
+            for (simdjson::dom::key_value_pair field : json_object) {
                 const char *data = field.key.data();
                 size_t size = field.key.size();
 				/* PHP 7.1 allowed using the empty string as a property of an object */
@@ -287,9 +287,9 @@ void cplus_simdjson_key_count(const char *json, size_t len, const char *key, zva
     zval v;
     switch (element.type()) {
         //ASCII sort
-        case simdjson::dom::element_type::ARRAY : ZVAL_LONG(&v, uint64_t(simdjson::dom::array(element).size()));
+        case simdjson::dom::element_type::ARRAY : ZVAL_LONG(&v, uint64_t(element.get_array().value_unsafe().size()));
             break;
-        case simdjson::dom::element_type::OBJECT : ZVAL_LONG(&v, uint64_t(simdjson::dom::object(element).size()));
+        case simdjson::dom::element_type::OBJECT : ZVAL_LONG(&v, uint64_t(element.get_object().value_unsafe().size()));
             break;
         default: ZVAL_LONG(&v, 0);
             break;

@@ -1,0 +1,16 @@
+ARG_ENABLE("simdjson", "whether to enable simdjson support", "no");
+
+if (PHP_SIMDJSON == "yes") {
+  AC_DEFINE('HAVE_SIMDJSON', 1, 'Have simdjson support', false);
+
+  // NOTE: The linker requires that the files have different basenames, so simdjson.cpp was
+  // renamed to php_simdjson.cpp
+  EXTENSION('simdjson',
+    'php_simdjson.cpp',
+    'yes',
+    '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 /std:c++latest');
+  ADD_SOURCES(configure_module_dirname + '/src', 'simdjson.cpp bindings.cpp', 'simdjson');
+  ADD_FLAG('CFLAGS_SIMDJSON', '/I' + configure_module_dirname);
+  PHP_INSTALL_HEADERS('ext/simdjson', 'php_simdjson.h');
+}
+// vim:ft=javascript

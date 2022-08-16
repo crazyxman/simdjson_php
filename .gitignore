@@ -1,5 +1,6 @@
 *.swp
 *.swo
+*.tgz
 .deps
 acinclude.m4
 aclocal.m4
