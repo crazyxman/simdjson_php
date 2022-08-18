@@ -7,14 +7,14 @@ simdjson_is_valid args test
 --FILE--
 <?php
 $reflection = new \ReflectionFunction('\simdjson_is_valid');
-var_dump((string) $reflection);
+echo $reflection;
 
 ?>
 --EXPECTF--
-string(128) "Function [ <internal:simdjson> function simdjson_is_valid ] {
+Function [ <internal:simdjson> function simdjson_is_valid ] {
 
-  - Parameters [1] {
+  - Parameters [2] {
     Parameter #0 [ <required> $json ]
+    Parameter #1 [ <optional> int%S $depth%S ]
   }
 }
-"

@@ -34,6 +34,12 @@ extern PHPAPI void php_var_dump(zval **struc, int level);
 extern PHPAPI void php_debug_zval_dump(zval **struc, int level);
 
 ZEND_BEGIN_MODULE_GLOBALS(simdjson)
+    /*
+     * php::simdjson::parser pointer, constructed on first use with request-scope lifetime.
+     * Note that in ZTS builds, the thread for each request will deliberately have different instances for each concurrently running request.
+     * (The simdjson library is not thread safe)
+     */
+    void *parser;
 ZEND_END_MODULE_GLOBALS(simdjson)
 
 PHP_MINIT_FUNCTION(simdjson);
