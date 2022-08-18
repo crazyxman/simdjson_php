@@ -62,7 +62,8 @@ static zval create_array(simdjson::dom::element element) /* {{{ */ {
             break;
         case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, element.get_int64().value_unsafe());
             break;
-        case simdjson::dom::element_type::UINT64 : ZVAL_LONG(&v, element.get_uint64().value_unsafe());
+            /* UINT64 is used for positive values exceeding INT64_MAX */
+        case simdjson::dom::element_type::UINT64 : ZVAL_DOUBLE(&v, (double)element.get_uint64().value_unsafe());
             break;
         case simdjson::dom::element_type::DOUBLE : ZVAL_DOUBLE(&v, element.get_double().value_unsafe());
             break;
@@ -133,7 +134,8 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
             break;
         case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, element.get_int64().value_unsafe());
             break;
-        case simdjson::dom::element_type::UINT64 : ZVAL_LONG(&v, element.get_uint64().value_unsafe());
+            /* UINT64 is used for positive values exceeding INT64_MAX */
+        case simdjson::dom::element_type::UINT64 : ZVAL_DOUBLE(&v, (double)element.get_uint64().value_unsafe());
             break;
         case simdjson::dom::element_type::DOUBLE : ZVAL_DOUBLE(&v, element.get_double().value_unsafe());
             break;
