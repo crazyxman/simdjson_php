@@ -141,6 +141,9 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
         case simdjson::dom::element_type::BOOL :
             ZVAL_BOOL(&v, element.get_bool().value_unsafe());
             break;
+        case simdjson::dom::element_type::NULL_VALUE :
+            ZVAL_NULL(&v);
+            break;
         case simdjson::dom::element_type::ARRAY : {
             const auto json_array = element.get_array().value_unsafe();
 #if PHP_VERSION_ID >= 70300
