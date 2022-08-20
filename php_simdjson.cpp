@@ -91,7 +91,7 @@ static bool simdjson_validate_depth(zend_long depth) {
         php_error_docref(NULL, E_WARNING, "Depth must be greater than zero");
         return false;
     } else if (UNEXPECTED(depth > SIMDJSON_MAX_DEPTH)) {
-        php_error_docref(NULL, E_WARNING, "Depth exceeds maximum allowed value of %zu", SIMDJSON_MAX_DEPTH);
+        php_error_docref(NULL, E_WARNING, "Depth exceeds maximum allowed value of " ZEND_LONG_FMT, SIMDJSON_MAX_DEPTH);
         return false;
     }
     return true;
