@@ -48,7 +48,9 @@
     <file name="decode_args.phpt" role="test"/>
     <file name="decode_exception.phpt" role="test"/>
     <file name="decode_invalid_property.phpt" role="test"/>
+    <file name="decode_max_depth.phpt" role="test"/>
     <file name="decode_result.phpt" role="test"/>
+    <file name="decode_types.phpt" role="test"/>
     <file name="depth.phpt" role="test"/>
     <file name="is_valid.phpt" role="test"/>
     <file name="is_valid_args.phpt" role="test"/>

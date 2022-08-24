@@ -83,14 +83,27 @@ static simdjson::dom::parser &simdjson_get_parser() {
     return *parser;
 }
 
+// The simdjson parser accepts strings with at most 32-bit lengths, for now.
+#define SIMDJSON_MAX_DEPTH ((zend_long)((SIZE_MAX / 8) < (UINT32_MAX / 2) ? (SIZE_MAX / 8) : (UINT32_MAX / 2)))
+
+static bool simdjson_validate_depth(zend_long depth) {
+    if (UNEXPECTED(depth <= 0)) {
+        php_error_docref(NULL, E_WARNING, "Depth must be greater than zero");
+        return false;
+    } else if (UNEXPECTED(depth > SIMDJSON_MAX_DEPTH)) {
+        php_error_docref(NULL, E_WARNING, "Depth exceeds maximum allowed value of " ZEND_LONG_FMT, SIMDJSON_MAX_DEPTH);
+        return false;
+    }
+    return true;
+}
+
 PHP_FUNCTION (simdjson_is_valid) {
     zend_string *json = NULL;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|l", &json, &depth) == FAILURE) {
         return;
     }
-    if (UNEXPECTED(depth <= 0)) {
-        php_error_docref(NULL, E_WARNING, "Depth must be greater than zero");
+    if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
     bool is_json = cplus_simdjson_is_valid(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), depth);
@@ -104,8 +117,7 @@ PHP_FUNCTION (simdjson_decode) {
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|bl", &json, &assoc, &depth) == FAILURE) {
         return;
     }
-    if (UNEXPECTED(depth <= 0)) {
-        php_error_docref(NULL, E_WARNING, "Depth must be greater than zero");
+    if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
     cplus_simdjson_parse(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), return_value, assoc, depth);
@@ -120,8 +132,7 @@ PHP_FUNCTION (simdjson_key_value) {
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|bl", &json, &key, &assoc, &depth) == FAILURE) {
         return;
     }
-    if (depth <= 0) {
-        php_error_docref(NULL, E_WARNING, "Depth must be greater than zero");
+    if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
     if (IS_STRING == Z_TYPE_P(json)) {
@@ -140,8 +151,7 @@ PHP_FUNCTION (simdjson_key_count) {
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|l", &json, &key, &depth) == FAILURE) {
         return;
     }
-    if (UNEXPECTED(depth <= 0)) {
-        php_error_docref(NULL, E_WARNING, "Depth must be greater than zero");
+    if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
     if (IS_STRING == Z_TYPE_P(json)) {
@@ -160,8 +170,7 @@ PHP_FUNCTION (simdjson_key_exists) {
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|l", &json, &key, &depth) == FAILURE) {
         return;
     }
-    if (UNEXPECTED(depth <= 0)) {
-        php_error_docref(NULL, E_WARNING, "Depth must be greater than zero");
+    if (!simdjson_validate_depth(depth)) {
         return;
     }
     u_short stats = SIMDJSON_PARSE_FAIL;
@@ -247,7 +256,7 @@ PHP_MINFO_FUNCTION (simdjson) {
 
     php_info_print_table_row(2, "Version", PHP_SIMDJSON_VERSION);
     php_info_print_table_row(2, "Support", SIMDJSON_SUPPORT_URL);
-    php_info_print_table_row(2, "Implementation", simdjson::active_implementation->description().c_str());
+    php_info_print_table_row(2, "Implementation", simdjson::get_active_implementation()->description().c_str());
 
     php_info_print_table_end();
 }
