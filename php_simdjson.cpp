@@ -28,32 +28,40 @@ extern "C" {
 
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
 
-ZEND_BEGIN_ARG_INFO_EX(simdjson_is_valid_arginfo, 0, 0, 1)
-        ZEND_ARG_INFO(0, json)
+#if PHP_VERSION_ID >= 70200
+#define SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
+    ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null)
+#else
+#define SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
+    ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, NULL, allow_null)
+#endif
+
+SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_is_valid_arginfo, 0, 1, _IS_BOOL, 1)
+        ZEND_ARG_TYPE_INFO(0, json, IS_STRING, 0)
         ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(simdjson_decode_arginfo, 0, 0, 1)
-        ZEND_ARG_INFO(0, json)
-        ZEND_ARG_INFO(0, assoc)
-        ZEND_ARG_INFO(0, depth)
+        ZEND_ARG_TYPE_INFO(0, json, IS_STRING, 0)
+        ZEND_ARG_TYPE_INFO(0, assoc, _IS_BOOL, 0)
+        ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(simdjson_key_value_arginfo, 0, 0, 2)
-        ZEND_ARG_INFO(0, json)
+        ZEND_ARG_TYPE_INFO(0, json, IS_STRING, 0)
         ZEND_ARG_TYPE_INFO(0, key, IS_STRING, 0)
         ZEND_ARG_TYPE_INFO(0, assoc, _IS_BOOL, 0)
         ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(simdjson_key_exists_arginfo, 0, 0, 2)
-        ZEND_ARG_INFO(0, json)
+SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_key_exists_arginfo, 0, 2, _IS_BOOL, 1)
+        ZEND_ARG_TYPE_INFO(0, json, IS_STRING, 0)
         ZEND_ARG_TYPE_INFO(0, key, IS_STRING, 0)
         ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(simdjson_key_count_arginfo, 0, 0, 2)
-        ZEND_ARG_INFO(0, json)
+SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_key_count_arginfo, 0, 2, IS_LONG, 1)
+        ZEND_ARG_TYPE_INFO(0, json, IS_STRING, 0)
         ZEND_ARG_TYPE_INFO(0, key, IS_STRING, 0)
         ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
@@ -125,61 +133,43 @@ PHP_FUNCTION (simdjson_decode) {
 
 PHP_FUNCTION (simdjson_key_value) {
 
-    zend_bool assoc = 0;
-    zval *json = NULL;
-    zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
+    zend_string *json = NULL;
     zend_string *key = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|bl", &json, &key, &assoc, &depth) == FAILURE) {
+    zend_bool assoc = 0;
+    zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS|bl", &json, &key, &assoc, &depth) == FAILURE) {
         return;
     }
     if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
-    if (IS_STRING == Z_TYPE_P(json)) {
-        zend_string *zd_json = Z_STR_P(json);
-        cplus_simdjson_key_value(simdjson_get_parser(), ZSTR_VAL(zd_json), ZSTR_LEN(zd_json), ZSTR_VAL(key), return_value, assoc, depth);
-    } else {
-        php_error_docref(NULL, E_WARNING, "expects parameter 1 to be string");
-    }
-
+    cplus_simdjson_key_value(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, assoc, depth);
 }
 
 PHP_FUNCTION (simdjson_key_count) {
-    zval *json = NULL;
-    zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
+    zend_string *json = NULL;
     zend_string *key = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|l", &json, &key, &depth) == FAILURE) {
+    zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS|l", &json, &key, &depth) == FAILURE) {
         return;
     }
     if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
-    if (IS_STRING == Z_TYPE_P(json)) {
-        zend_string *zd_json = Z_STR_P(json);
-        cplus_simdjson_key_count(simdjson_get_parser(), ZSTR_VAL(zd_json), ZSTR_LEN(zd_json), ZSTR_VAL(key), return_value, depth);
-    } else {
-        php_error_docref(NULL, E_WARNING, "expects parameter 1 to be string");
-    }
-
+    cplus_simdjson_key_count(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, depth);
 }
 
 PHP_FUNCTION (simdjson_key_exists) {
-    zval *json = NULL;
+    zend_string *json = NULL;
     zend_string *key = NULL;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "zS|l", &json, &key, &depth) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS|l", &json, &key, &depth) == FAILURE) {
         return;
     }
     if (!simdjson_validate_depth(depth)) {
         return;
     }
-    u_short stats = SIMDJSON_PARSE_FAIL;
-    if (IS_STRING == Z_TYPE_P(json)) {
-        zend_string *zd_json = Z_STR_P(json);
-        stats = cplus_simdjson_key_exists(simdjson_get_parser(), ZSTR_VAL(zd_json), ZSTR_LEN(zd_json), ZSTR_VAL(key), depth);
-    } else {
-        php_error_docref(NULL, E_WARNING, "expects parameter 1 to be string");
-    }
+    u_short stats = cplus_simdjson_key_exists(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), depth);
     if (SIMDJSON_PARSE_FAIL == stats) {
         RETURN_NULL();
     } else if (SIMDJSON_PARSE_KEY_EXISTS == stats) {
