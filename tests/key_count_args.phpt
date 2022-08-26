@@ -14,8 +14,9 @@ echo $reflection;
 Function [ <internal:simdjson> function simdjson_key_count ] {
 
   - Parameters [3] {
-    Parameter #0 [ <required> $json ]
+    Parameter #0 [ <required> string $json ]
     Parameter #1 [ <required> string $key ]
     Parameter #2 [ <optional> int%S $depth%S ]
   }
+  - Return [ %Sint%S ]
 }

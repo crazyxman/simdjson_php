@@ -18,8 +18,8 @@
  </lead>
  <date>2022-08-15</date>
  <version>
-  <release>1.0.0</release>
-  <api>1.0.0</api>
+  <release>2.0.0</release>
+  <api>2.0.0</api>
  </version>
  <stability>
   <release>stable</release>
@@ -27,7 +27,7 @@
  </stability>
  <license uri="https://www.php.net/license/3_0.txt">PHP License</license>
  <notes>
-* Initial release
+* Initial PECL release
  </notes>
  <contents>
   <dir name="/">
@@ -50,6 +50,7 @@
     <file name="decode_invalid_property.phpt" role="test"/>
     <file name="decode_max_depth.phpt" role="test"/>
     <file name="decode_result.phpt" role="test"/>
+    <file name="decode_strict_types.phpt" role="test"/>
     <file name="decode_types.phpt" role="test"/>
     <file name="depth.phpt" role="test"/>
     <file name="is_valid.phpt" role="test"/>
@@ -82,21 +83,5 @@
  <providesextension>simdjson</providesextension>
  <extsrcrelease/>
  <changelog>
-  <release>
-   <date>2022-08-15</date>
-   <time>00:00:00</time>
-   <version>
-    <release>1.0.0</release>
-    <api>1.0.0</api>
-   </version>
-   <stability>
-    <release>stable</release>
-    <api>stable</api>
-   </stability>
-   <license uri="http://www.php.net/license/3_0.txt">PHP License</license>
-   <notes>
-* Initial release
-   </notes>
-  </release>
  </changelog>
 </package>
