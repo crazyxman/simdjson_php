@@ -52,6 +52,16 @@ build_parsed_json_cust(simdjson::dom::parser& parser, simdjson::dom::element &do
 
 /* }}} */
 
+static zend_always_inline void simdjson_set_zval_to_int64(zval *zv, const int64_t value) {
+#if SIZEOF_ZEND_LONG < 8
+    if (value != (zend_long)value) {
+        ZVAL_DOUBLE(zv, value);
+        return;
+    }
+#endif
+    ZVAL_LONG(zv, value);
+}
+
 static zval create_array(simdjson::dom::element element) /* {{{ */ {
     zval v;
 
@@ -60,7 +70,8 @@ static zval create_array(simdjson::dom::element element) /* {{{ */ {
         case simdjson::dom::element_type::STRING :
             ZVAL_STRINGL(&v, element.get_c_str().value_unsafe(), element.get_string_length().value_unsafe());
             break;
-        case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, element.get_int64().value_unsafe());
+        case simdjson::dom::element_type::INT64 :
+            simdjson_set_zval_to_int64(&v, element.get_int64().value_unsafe());
             break;
             /* UINT64 is used for positive values exceeding INT64_MAX */
         case simdjson::dom::element_type::UINT64 : ZVAL_DOUBLE(&v, (double)element.get_uint64().value_unsafe());
@@ -131,7 +142,8 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
         case simdjson::dom::element_type::STRING :
             ZVAL_STRINGL(&v, element.get_c_str().value_unsafe(), element.get_string_length().value_unsafe());
             break;
-        case simdjson::dom::element_type::INT64 : ZVAL_LONG(&v, element.get_int64().value_unsafe());
+        case simdjson::dom::element_type::INT64 :
+            simdjson_set_zval_to_int64(&v, element.get_int64().value_unsafe());
             break;
             /* UINT64 is used for positive values exceeding INT64_MAX */
         case simdjson::dom::element_type::UINT64 : ZVAL_DOUBLE(&v, (double)element.get_uint64().value_unsafe());
