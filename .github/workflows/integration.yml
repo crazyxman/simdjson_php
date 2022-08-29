@@ -119,18 +119,16 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           # for correct php-config extension dir, see https://github.com/shivammathur/setup-php/issues/147
           tools: pecl, phpize, php-config
-
       - name: "Build extension"
-        env:
-          NO_INTERACTION: true
-          REPORT_EXIT_STATUS: 1
         run: |
+          export NO_INTERACTION=true
+          export REPORT_EXIT_STATUS=1
           php-config --extension-dir
           phpize
           ./configure
-          sudo make
+          make
           sudo make install
-          sudo make test TESTS="--show-diff"
+          make test TESTS="--show-diff" || exit 1
 
       - name: "Show"
         run: "php -dextension=simdjson.so --ri simdjson"
