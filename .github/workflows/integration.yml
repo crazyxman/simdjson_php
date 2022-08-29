@@ -1,4 +1,4 @@
-name: Testing simdjson PHP extension
+name: CI
 on: [push, pull_request]
 
 jobs:
