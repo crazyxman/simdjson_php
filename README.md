@@ -9,6 +9,26 @@ simdjson_php bindings for the [simdjson project](https://github.com/lemire/simdj
 - We support platforms like Linux or macOS
 - Prerequisites: g++ (version 7 or better) or clang++ (version 6 or better), and a 64-bit system with a command-line shell (e.g., Linux, macOS, freeBSD). We also support programming environments like Visual Studio and Xcode, but different steps are needed
 
+## Installing
+
+### Linux
+
+simdjson may also be installed with the command `pecl install simdjson` (You will need to enable simdjson in php.ini)
+
+Alternately, you may wish to [build from source](#compile-simdjson_php-in-linux).
+
+### MacOS
+
+`pecl install simdjson` is the recommended installation method (You will need to enable simdjson in php.ini)
+
+Alternately, you may wish to [build from source](#compile-simdjson_php-in-linux).
+
+### Installing on Windows
+
+Prebuilt DLLs can be [downloaded from PECL](https://pecl.php.net/package/simdjson) once the [PHP for Windows team fixes hardware issues](https://windows.php.net/).
+
+See https://wiki.php.net/internals/windows/stepbystepbuild_sdk_2#building_pecl_extensions and .appveyor.yml for how to build this, in the meantime.
+
 ## Compile simdjson_php in Linux
 ```
 $ phpize
