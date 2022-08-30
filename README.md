@@ -1,10 +1,12 @@
 # simdjson_php
 simdjson_php bindings for the [simdjson project](https://github.com/lemire/simdjson).
 
+[![Build Status](https://github.com/crazyxman/simdjson_php/actions/workflows/integration.yml/badge.svg?branch=master)](https://github.com/crazyxman/simdjson_php/actions/workflows/integration.yml?query=branch%3Amaster)
+
 ## Requirement
 - PHP 7 +
 - We support platforms like Linux or macOS
-- Prerequisites: g++ (version 7 or better) or clang++ (version 6 or better), and a 64-bit system with a command-line shell (e.g., Linux, macOS, freeBSD). We also support programming environnements like Visual Studio and Xcode, but different steps are needed
+- Prerequisites: g++ (version 7 or better) or clang++ (version 6 or better), and a 64-bit system with a command-line shell (e.g., Linux, macOS, freeBSD). We also support programming environments like Visual Studio and Xcode, but different steps are needed
 
 ## Compile simdjson_php in Linux
 ```
@@ -56,7 +58,7 @@ $value = simdjson_key_value($jsonString, "Image/Thumbnail/Url");
 var_dump($value); // string(38) "http://www.example.com/image/481989943"
 
 $value = simdjson_key_value($jsonString, "Image/IDs/4", true);
-var_dump($value); 
+var_dump($value);
 /*
 array(1) {
   ["p"]=>
