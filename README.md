@@ -2,6 +2,7 @@
 simdjson_php bindings for the [simdjson project](https://github.com/lemire/simdjson).
 
 [![Build Status](https://github.com/crazyxman/simdjson_php/actions/workflows/integration.yml/badge.svg?branch=master)](https://github.com/crazyxman/simdjson_php/actions/workflows/integration.yml?query=branch%3Amaster)
+[![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/crazyxman/simdjson_php?svg=true)](https://ci.appveyor.com/project/crazyxman/simdjson-php)
 
 ## Requirement
 - PHP 7 +
