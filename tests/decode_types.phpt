@@ -1,5 +1,9 @@
 --TEST--
 simdjson_decode test all types
+--SKIPIF--
+<?php
+if (PHP_VERSION_ID < 70100) echo "skip php 7.1+ required for empty string property name\n";
+?>
 --FILE--
 <?php
 // Test all types that work both on 32-bit and 64-bit PECL builds.

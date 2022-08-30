@@ -16,10 +16,10 @@
   <email>1054636713@qq.com</email>
   <active>yes</active>
  </lead>
- <date>2022-08-15</date>
+ <date>2022-08-29</date>
  <version>
-  <release>2.0.0</release>
-  <api>2.0.0</api>
+  <release>2.0.1</release>
+  <api>2.0.1</api>
  </version>
  <stability>
   <release>stable</release>
@@ -27,7 +27,7 @@
  </stability>
  <license uri="https://www.php.net/license/3_0.txt">PHP License</license>
  <notes>
-* Initial PECL release
+* On 32-bit builds, convert decoded 64-bit integers to floats if they would be out of range.
  </notes>
  <contents>
   <dir name="/">
@@ -45,6 +45,8 @@
     <file name="simdjson.h" role="src"/>
    </dir>
    <dir name="tests">
+    <file name="32bit_support.phpt" role="test"/>
+    <file name="64bit_support.phpt" role="test"/>
     <file name="decode_args.phpt" role="test"/>
     <file name="decode_exception.phpt" role="test"/>
     <file name="decode_invalid_property.phpt" role="test"/>
@@ -83,5 +85,20 @@
  <providesextension>simdjson</providesextension>
  <extsrcrelease/>
  <changelog>
+  <release>
+   <date>2022-08-15</date>
+   <version>
+    <release>2.0.0</release>
+    <api>2.0.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://www.php.net/license/3_0.txt">PHP License</license>
+   <notes>
+* Initial PECL release
+   </notes>
+  </release>
  </changelog>
 </package>
