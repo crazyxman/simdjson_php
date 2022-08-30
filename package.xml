@@ -10,16 +10,18 @@
   <email>tandre@php.net</email>
   <active>yes</active>
  </lead>
+ <!-- https://pecl.php.net/release-upload.php fails with "User does not exist" for blank username, there is no corresponding PECL account.
  <lead>
   <name>Jinxi Wang</name>
   <user></user>
   <email>1054636713@qq.com</email>
   <active>yes</active>
  </lead>
+ -->
  <date>2022-08-30</date>
  <version>
-  <release>2.0.2</release>
-  <api>2.0.2</api>
+  <release>2.0.3</release>
+  <api>2.0.3</api>
  </version>
  <stability>
   <release>stable</release>
@@ -27,7 +29,7 @@
  </stability>
  <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
  <notes>
-* Fix license metadata in package.xml
+* Fix error validating package.xml when uploading to PECL due to blank username of lead without a PECL account.
  </notes>
  <contents>
   <dir name="/">
@@ -86,6 +88,21 @@
  <providesextension>simdjson</providesextension>
  <extsrcrelease/>
  <changelog>
+  <release>
+   <date>2022-08-30</date>
+   <version>
+    <release>2.0.2</release>
+    <api>2.0.2</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
+   <notes>
+* Fix license metadata in package.xml
+   </notes>
+  </release>
   <release>
    <date>2022-08-29</date>
    <version>
