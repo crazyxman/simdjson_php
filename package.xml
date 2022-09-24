@@ -20,8 +20,8 @@
  -->
  <date>2022-08-30</date>
  <version>
-  <release>2.0.3</release>
-  <api>2.0.3</api>
+  <release>2.0.4dev</release>
+  <api>2.0.4dev</api>
  </version>
  <stability>
   <release>stable</release>
@@ -29,7 +29,7 @@
  </stability>
  <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
  <notes>
-* Fix error validating package.xml when uploading to PECL due to blank username of lead without a PECL account.
+* Add `-fvisibility=hidden` to compiler options to reduce compiled extension size by avoiding exporting symbols by default.
  </notes>
  <contents>
   <dir name="/">
@@ -88,6 +88,21 @@
  <providesextension>simdjson</providesextension>
  <extsrcrelease/>
  <changelog>
+  <release>
+   <date>2022-08-30</date>
+   <version>
+    <release>2.0.3</release>
+    <api>2.0.3</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
+   <notes>
+* Fix error validating package.xml when uploading to PECL due to blank username of lead without a PECL account.
+   </notes>
+  </release>
   <release>
    <date>2022-08-30</date>
    <version>
