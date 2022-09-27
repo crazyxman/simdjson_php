@@ -111,29 +111,40 @@ suite: 1348b906f3a3db7db83e25ab05aeb9a8b3091a84, date: 2022-08-16, stime: 23:59:
 
 ## Run benchmark
 
-You may also run a simpler standalone benchmark script on the JSON files in `jsonexamples` by running the commands:
+You may also run a simpler standalone benchmark script on the JSON files in [`jsonexamples`](../jsonexamples) by running the commands:
 
 ```
 php -d extension=modules/simdjson.so benchmark/benchmark.php
 ```
+
+For decoding functions, the benchmark includes both the time to decode the data and the time to garbage collect/free the decoded data.
 
 The output should look like this
 
 ```
 filename|json_decode|simdjson_decode|simdjson_is_valid|relative_decode|relative_is_valid
 ---|:--:|---:|---:|---:|--:
-apache_builds.json|494947|254120|56543|0.51x|0.11x
-canada.json|37145417|10838062|3320384|0.29x|0.09x
-citm_catalog.json|5874904|2776749|919151|0.47x|0.16x
-github_events.json|259100|97268|27053|0.38x|0.10x
-gsoc-2018.json|12669856|3819161|1622433|0.30x|0.13x
-instruments.json|926302|379006|127161|0.41x|0.14x
-marine_ik.json|25719210|13434756|4342874|0.52x|0.17x
-mesh.json|6093213|2881514|1037859|0.47x|0.17x
-mesh.pretty.json|10560292|2920351|1460824|0.28x|0.14x
-numbers.json|940632|293774|191690|0.31x|0.20x
-random.json|2962083|1420896|361135|0.48x|0.12x
-twitter.json|2398937|961927|323916|0.40x|0.14x
-twitterescaped.json|2730841|1077194|498268|0.39x|0.18x
-update-center.json|2875567|1128182|293914|0.39x|0.10x
+apache_builds.json|529445|252983|57314|0.48x|0.11x
+canada.json|37480906|9114440|3594688|0.24x|0.10x
+citm_catalog.json|6211875|3034887|992156|0.49x|0.16x
+github_events.json|274541|101767|30350|0.37x|0.11x
+gsoc-2018.json|13174491|4000738|1771096|0.30x|0.13x
+instruments.json|1051116|396716|133227|0.38x|0.13x
+marine_ik.json|25511155|13070490|4951457|0.51x|0.19x
+mesh.json|6063492|2246089|1191093|0.37x|0.20x
+mesh.pretty.json|10617360|2659494|1634062|0.25x|0.15x
+numbers.json|1017109|328689|213022|0.32x|0.21x
+random.json|3158095|1526622|402568|0.48x|0.13x
+stringifiedphp.json|591071|99104|86034|0.17x|0.15x
+twitter.json|2589313|997667|354375|0.39x|0.14x
+twitterescaped.json|3089506|1156811|553984|0.37x|0.18x
+update-center.json|3084217|1227891|336303|0.40x|0.11x
 ```
+
+- `canada.json` is an example of a string with a lot of floats (polygon for a map of canada).
+  Same for the `mesh*.json` files and `numbers.json` file
+- `stringifiedphp.json` is an example of a single long JSON encoded string (representation of php file with newlines and quotes).
+- `twitter.json` is an example of decoding data with a mix of types with a lot of non-ascii codepoints.
+  `twitterescaped.json` is the same data with `"\uXXXX"` escaping and no whitespace.
+- `random.json` is a large object with a lot of short keys, small objects/arrays, and short string/integer values, with some non-ASCII values.
+  `apache_builds.json` contains a lot of whitespace and relatively small objects, string keys, and mostly string values.
