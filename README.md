@@ -46,14 +46,7 @@ extension=simdjson.so
 
 ## simdjson_php Usage
 ```php
-
-//Check if a JSON string is valid:
-$isValid = simdjson_is_valid($jsonString); //return bool
-
-//Parsing a JSON string. similar to the json_decode() function but without the fourth argument
-$parsedJSON = simdjson_decode($jsonString, true, 512); //return array|object|null. "null" string is not a standard json
-
-/*
+$jsonString = <<<'JSON'
 {
   "Image": {
     "Width":  800,
@@ -68,7 +61,19 @@ $parsedJSON = simdjson_decode($jsonString, true, 512); //return array|object|nul
     "IDs": [116, 943, 234, 38793, {"p": "30"}]
   }
 }
-*/
+JSON;
+
+//Check if a JSON string is valid:
+$isValid = simdjson_is_valid($jsonString); //return bool
+var_dump($isValid);  // true
+
+//Parsing a JSON string. similar to the json_decode() function but without the fourth argument
+try {
+    $parsedJSON = simdjson_decode($jsonString, true, 512); //return array|object|null. "null" string is not a standard json
+    var_dump($parsedJSON); // PHP array
+} catch (RuntimeException $e) {
+    echo "Failed to parse $jsonString: {$e->getMessage()}\n";
+}
 
 //note. "/" is a separator. Can be used as the "key" of the object and the "index" of the array
 //E.g. "Image/Thumbnail/Url" is ok.
@@ -96,6 +101,27 @@ $res = simdjson_key_count($jsonString, "Image/IDs");
 var_dump($res) //int(5)
 
 ```
+
+## Edge cases
+
+There are some differences from `json_decode()` due to the implementation of the underlying simdjson library. This will throw a RuntimeException if simdjson rejects the JSON.
+
+1) `simdjson_decode()`  how out of range 64-bit integers and floats are handled.
+
+See https://github.com/simdjson/simdjson/blob/master/doc/basics.md#standard-compliance
+
+> - The specification allows implementations to set limits on the range and precision of numbers accepted.  We support 64-bit floating-point numbers as well as integer values.
+>   - We parse integers and floating-point numbers as separate types which allows us to support all signed (two's complement) 64-bit integers, like a Java `long` or a C/C++ `long long` and all 64-bit unsigned integers. When we cannot represent exactly an integer as a signed or unsigned 64-bit value, we reject the JSON document.
+>   - We support the full range of 64-bit floating-point numbers (binary64). The values range from `std::numeric_limits<double>::lowest()`  to `std::numeric_limits<double>::max()`, so from -1.7976e308 all the way to 1.7975e308. Extreme values (less or equal to -1e308, greater or equal to 1e308) are rejected: we refuse to parse the input document. Numbers are parsed with a perfect accuracy (ULP 0): the nearest floating-point value is chosen, rounding to even when needed. If you serialized your floating-point numbers with 17 significant digits in a standard compliant manner, the simdjson library is guaranteed to recover the same numbers, exactly.
+
+2) The maximum string length that can be passed to `simdjson_decode()` is 4GiB (4294967295 bytes).
+`json_decode()` can decode longer strings.
+
+3) The handling of max depth is counted slightly differently for empty vs non-empty objects/arrays.
+In `json_decode`, an array with a scalar has the same depth as an array with no elements.
+In `simdjson_decode`, an array with a scalar is one level deeper than an array with no elements.
+For typical use cases, this shouldn't matter.
+(e.g. `simdjson_decode('[[]]', true, 2)` will succeed but `json_decode('[[]]', true, 2)` and `simdjson_decode('[[1]]', true, 2)` will fail.)
 
 ## Benchmarks
 See the [benchmark](./benchmark) folder for more benchmarks.
