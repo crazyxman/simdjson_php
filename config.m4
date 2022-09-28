@@ -23,6 +23,11 @@ if test "$PHP_SIMDJSON" != "no"; then
     AC_MSG_RESULT([$php_version, ok])
   fi
 
+  dnl Mark symbols hidden by default if the compiler (for example, gcc >= 4)
+  dnl supports it. This can help reduce the binary size and startup time.
+  AX_CHECK_COMPILE_FLAG([-fvisibility=hidden],
+                        [CXXFLAGS="$CXXFLAGS -fvisibility=hidden"])
+
   AC_DEFINE(HAVE_SIMDJSON, 1, [whether simdjson is enabled])
   PHP_NEW_EXTENSION(simdjson, [
       php_simdjson.cpp                    \
