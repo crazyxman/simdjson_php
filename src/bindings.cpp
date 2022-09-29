@@ -26,6 +26,8 @@ extern "C" {
 #define zend_string_release_ex(s, persistent) zend_string_release((s))
 #endif
 
+#define SIMDJSON_DEPTH_CHECK_THRESHOLD 100000
+
 static inline simdjson::simdjson_result<simdjson::dom::element>
 get_key_with_optional_prefix(simdjson::dom::element &doc, std::string_view json_pointer)
 {
@@ -36,6 +38,25 @@ get_key_with_optional_prefix(simdjson::dom::element &doc, std::string_view json_
 static simdjson::error_code
 build_parsed_json_cust(simdjson::dom::parser& parser, simdjson::dom::element &doc, const char *buf, size_t len, bool realloc_if_needed,
                        size_t depth = simdjson::DEFAULT_MAX_DEPTH) {
+    if (UNEXPECTED(depth > SIMDJSON_DEPTH_CHECK_THRESHOLD) && depth > len && depth > parser.max_depth()) {
+        /*
+         * Choose the depth in a way that both avoids frequent reallocations
+         * and avoids excessive amounts of wasted memory beyond multiples of the largest string ever decoded.
+         *
+         * If the depth is already sufficient to parse a string of length `len`,
+         * then use the parser's previous depth.
+         *
+         * Precondition: depth > len
+         * Postcondition: depth <= original_depth && depth > len
+         */
+        if (len < SIMDJSON_DEPTH_CHECK_THRESHOLD) {
+            depth = SIMDJSON_DEPTH_CHECK_THRESHOLD;
+        } else if (depth > len * 2) {
+            // In callers, simdjson_validate_depth ensures depth <= SIMDJSON_MAX_DEPTH (which is <= SIZE_MAX/8),
+            // so len * 2 is even smaller than the previous depth and won't overflow.
+            depth = len * 2;
+        }
+    }
     auto error = parser.allocate(len, depth);
 
     if (error) {
