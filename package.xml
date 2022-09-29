@@ -52,6 +52,7 @@
     <file name="64bit_support.phpt" role="test"/>
     <file name="decode_args.phpt" role="test"/>
     <file name="decode_exception.phpt" role="test"/>
+    <file name="decode_integer_overflow.phpt" role="test"/>
     <file name="decode_invalid_property.phpt" role="test"/>
     <file name="decode_max_depth.phpt" role="test"/>
     <file name="decode_result.phpt" role="test"/>
