@@ -3,10 +3,13 @@ docker_*
 **/.deps
 **/*.swp
 **/*.swo
+**/.git
 **/acinclude.m4
 **/aclocal.m4
 **/autom4te.cache/
+**/benchmark/
 **/build/
+**/CMakeFiles/
 **/config.h
 **/config.log
 **/config.nice
@@ -17,6 +20,7 @@ docker_*
 **/configure
 **/configure.in
 **/install-sh
+**/jsonexamples/
 **/ltmain.sh
 **/missing
 **/mkinstalldirs
@@ -31,6 +35,7 @@ docker_*
 **/*.la
 **/*.lo
 **/*.dep
+**/*.tgz
 **/php_test_results_*.txt
 *~
 **/configure.ac
