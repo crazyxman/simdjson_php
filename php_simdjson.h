@@ -17,7 +17,7 @@
 extern zend_module_entry simdjson_module_entry;
 #define phpext_simdjson_ptr &simdjson_module_entry
 
-#define PHP_SIMDJSON_VERSION                  "2.0.5"
+#define PHP_SIMDJSON_VERSION                  "2.1.0dev"
 #define SIMDJSON_SUPPORT_URL                  "https://github.com/crazyxman/simdjson_php"
 #define SIMDJSON_PARSE_FAIL                   0
 #define SIMDJSON_PARSE_SUCCESS                1
