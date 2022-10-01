@@ -32,6 +32,8 @@
 * Allow out of range 64-bit values in JSON integer syntax and allow floating point values outside of the max/min finite floating point values (i.e. parsing to +/- infinity).
 
   This allows simdjson_decode() to be used as a replacement for json_decode() in more use cases.
+* Return the correct value in simdjson_key_count() for JSON pointers to arrays/objects exceeding size 0xFFFFFF.
+  Previously, this would be limited to returning at most 0xFFFFFF(16777215).
  </notes>
  <contents>
   <dir name="/">
@@ -68,7 +70,6 @@
     <file name="key_count.phpt" role="test"/>
     <file name="key_count_args.phpt" role="test"/>
     <file name="key_count_exception.phpt" role="test"/>
-    <file name="key_count_large.phpt" role="test"/>
     <file name="key_exists.phpt" role="test"/>
     <file name="key_exists_args.phpt" role="test"/>
     <file name="key_value_args.phpt" role="test"/>
