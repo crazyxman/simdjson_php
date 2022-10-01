@@ -79,6 +79,31 @@
     <file name="key_value_result.phpt" role="test"/>
     <file name="uint64_overflow.phpt" role="test"/>
     <file name="_files/result.json" role="test"/>
+    <dir name="compat">
+     <file name="001.phpt" role="test"/>
+     <file name="bug41067.phpt" role="test"/>
+     <file name="bug41403.phpt" role="test"/>
+     <file name="bug41504.phpt" role="test"/>
+     <file name="bug45791.phpt" role="test"/>
+     <file name="bug47644.phpt" role="test"/>
+     <file name="bug50224.phpt" role="test"/>
+     <file name="bug62010.phpt" role="test"/>
+     <file name="bug64874_part1.phpt" role="test"/>
+     <file name="bug64874_part2.phpt" role="test"/>
+     <file name="bug68546.phpt" role="test"/>
+     <file name="bug68817.phpt" role="test"/>
+     <file name="bug68938.phpt" role="test"/>
+     <file name="bug69187.phpt" role="test"/>
+     <file name="fail001.phpt" role="test"/>
+     <file name="json_decode_basic.phpt" role="test"/>
+     <file name="json_decode_error.phpt" role="test"/>
+     <file name="json_decode_invalid_utf8.phpt" role="test"/>
+     <file name="pass001.1_64bit.phpt" role="test"/>
+     <file name="pass001.1.phpt" role="test"/>
+     <file name="pass001.phpt" role="test"/>
+     <file name="pass002.phpt" role="test"/>
+     <file name="pass003.phpt" role="test"/>
+    </dir>
    </dir>
   </dir>
  </contents>
