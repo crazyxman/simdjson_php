@@ -1,4 +1,4 @@
-/* auto-generated on 2022-07-28 21:45:54 -0400. Do not edit! */
+/* auto-generated on 2022-09-30 12:13:16 -0400. Do not edit! */
 /* begin file src/simdjson.cpp */
 #include "simdjson.h"
 
@@ -1589,7 +1589,8 @@ namespace internal {
     { INSUFFICIENT_PADDING, "simdjson requires the input JSON string to have at least SIMDJSON_PADDING extra bytes allocated, beyond the string's length. Consider using the simdjson::padded_string class if needed." },
     { INCOMPLETE_ARRAY_OR_OBJECT, "JSON document ended early in the middle of an object or array." },
     { SCALAR_DOCUMENT_AS_VALUE, "A JSON document made of a scalar (number, Boolean, null or string) is treated as a value. Use get_bool(), get_double(), etc. on the document instead. "},
-    { OUT_OF_BOUNDS, "Attempted to access location outside of document."}
+    { OUT_OF_BOUNDS, "Attempted to access location outside of document."},
+    { TRAILING_CONTENT, "Unexpected trailing content in the JSON input."}
   }; // error_messages[]
 
 } // namespace internal
@@ -3105,6 +3106,14 @@ using namespace simd;
       this->error |= this->prev_incomplete;
     }
 
+#ifndef SIMDJSON_IF_CONSTEXPR
+#if SIMDJSON_CPLUSPLUS17
+#define SIMDJSON_IF_CONSTEXPR if constexpr
+#else
+#define SIMDJSON_IF_CONSTEXPR if
+#endif
+#endif
+
     simdjson_inline void check_next_input(const simd8x64<uint8_t>& input) {
       if(simdjson_likely(is_ascii(input))) {
         this->error |= this->prev_incomplete;
@@ -3114,12 +3123,12 @@ using namespace simd;
                 ||(simd8x64<uint8_t>::NUM_CHUNKS == 2)
                 || (simd8x64<uint8_t>::NUM_CHUNKS == 4),
                 "We support one, two or four chunks per 64-byte block.");
-        if(simd8x64<uint8_t>::NUM_CHUNKS == 1) {
+        SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 1) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
-        } if(simd8x64<uint8_t>::NUM_CHUNKS == 2) {
+        } else SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 2) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
           this->check_utf8_bytes(input.chunks[1], input.chunks[0]);
-        } else if(simd8x64<uint8_t>::NUM_CHUNKS == 4) {
+        } else SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 4) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
           this->check_utf8_bytes(input.chunks[1], input.chunks[0]);
           this->check_utf8_bytes(input.chunks[2], input.chunks[1]);
@@ -3497,7 +3506,7 @@ private:
  */
 class json_scanner {
 public:
-  json_scanner() {}
+  json_scanner() = default;
   simdjson_inline json_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
   simdjson_inline error_code finish();
@@ -4194,17 +4203,18 @@ simdjson_inline bool handle_unicode_codepoint(const uint8_t **src_ptr,
     }
     uint32_t code_point_2 = jsoncharutils::hex_to_u32_nocheck(*src_ptr + 2);
 
-    // if the first code point is invalid we will get here, as we will go past
-    // the check for being outside the Basic Multilingual plane. If we don't
-    // find a \u immediately afterwards we fail out anyhow, but if we do,
-    // this check catches both the case of the first code point being invalid
-    // or the second code point being invalid.
-    if ((code_point | code_point_2) >> 16) {
+    // We have already checked that the high surrogate is valid and
+    // (code_point - 0xd800) < 1024.
+    //
+    // Check that code_point_2 is in the range 0xdc00..0xdfff
+    // and that code_point_2 was parsed from valid hex.
+    uint32_t low_bit = code_point_2 - 0xdc00;
+    if (low_bit >> 10) {
       return false;
     }
 
     code_point =
-        (((code_point - 0xd800) << 10) | (code_point_2 - 0xdc00)) + 0x10000;
+        (((code_point - 0xd800) << 10) | low_bit) + 0x10000;
     *src_ptr += 6;
   } else if (code_point >= 0xdc00 && code_point <= 0xdfff) {
       // If we encounter a low surrogate (not preceded by a high surrogate)
@@ -5668,17 +5678,18 @@ simdjson_inline bool handle_unicode_codepoint(const uint8_t **src_ptr,
     }
     uint32_t code_point_2 = jsoncharutils::hex_to_u32_nocheck(*src_ptr + 2);
 
-    // if the first code point is invalid we will get here, as we will go past
-    // the check for being outside the Basic Multilingual plane. If we don't
-    // find a \u immediately afterwards we fail out anyhow, but if we do,
-    // this check catches both the case of the first code point being invalid
-    // or the second code point being invalid.
-    if ((code_point | code_point_2) >> 16) {
+    // We have already checked that the high surrogate is valid and
+    // (code_point - 0xd800) < 1024.
+    //
+    // Check that code_point_2 is in the range 0xdc00..0xdfff
+    // and that code_point_2 was parsed from valid hex.
+    uint32_t low_bit = code_point_2 - 0xdc00;
+    if (low_bit >> 10) {
       return false;
     }
 
     code_point =
-        (((code_point - 0xd800) << 10) | (code_point_2 - 0xdc00)) + 0x10000;
+        (((code_point - 0xd800) << 10) | low_bit) + 0x10000;
     *src_ptr += 6;
   } else if (code_point >= 0xdc00 && code_point <= 0xdfff) {
       // If we encounter a low surrogate (not preceded by a high surrogate)
@@ -6883,6 +6894,14 @@ using namespace simd;
       this->error |= this->prev_incomplete;
     }
 
+#ifndef SIMDJSON_IF_CONSTEXPR
+#if SIMDJSON_CPLUSPLUS17
+#define SIMDJSON_IF_CONSTEXPR if constexpr
+#else
+#define SIMDJSON_IF_CONSTEXPR if
+#endif
+#endif
+
     simdjson_inline void check_next_input(const simd8x64<uint8_t>& input) {
       if(simdjson_likely(is_ascii(input))) {
         this->error |= this->prev_incomplete;
@@ -6892,12 +6911,12 @@ using namespace simd;
                 ||(simd8x64<uint8_t>::NUM_CHUNKS == 2)
                 || (simd8x64<uint8_t>::NUM_CHUNKS == 4),
                 "We support one, two or four chunks per 64-byte block.");
-        if(simd8x64<uint8_t>::NUM_CHUNKS == 1) {
+        SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 1) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
-        } if(simd8x64<uint8_t>::NUM_CHUNKS == 2) {
+        } else SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 2) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
           this->check_utf8_bytes(input.chunks[1], input.chunks[0]);
-        } else if(simd8x64<uint8_t>::NUM_CHUNKS == 4) {
+        } else SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 4) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
           this->check_utf8_bytes(input.chunks[1], input.chunks[0]);
           this->check_utf8_bytes(input.chunks[2], input.chunks[1]);
@@ -7277,7 +7296,7 @@ private:
  */
 class json_scanner {
 public:
-  json_scanner() {}
+  json_scanner() = default;
   simdjson_inline json_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
   simdjson_inline error_code finish();
@@ -8020,17 +8039,18 @@ simdjson_inline bool handle_unicode_codepoint(const uint8_t **src_ptr,
     }
     uint32_t code_point_2 = jsoncharutils::hex_to_u32_nocheck(*src_ptr + 2);
 
-    // if the first code point is invalid we will get here, as we will go past
-    // the check for being outside the Basic Multilingual plane. If we don't
-    // find a \u immediately afterwards we fail out anyhow, but if we do,
-    // this check catches both the case of the first code point being invalid
-    // or the second code point being invalid.
-    if ((code_point | code_point_2) >> 16) {
+    // We have already checked that the high surrogate is valid and
+    // (code_point - 0xd800) < 1024.
+    //
+    // Check that code_point_2 is in the range 0xdc00..0xdfff
+    // and that code_point_2 was parsed from valid hex.
+    uint32_t low_bit = code_point_2 - 0xdc00;
+    if (low_bit >> 10) {
       return false;
     }
 
     code_point =
-        (((code_point - 0xd800) << 10) | (code_point_2 - 0xdc00)) + 0x10000;
+        (((code_point - 0xd800) << 10) | low_bit) + 0x10000;
     *src_ptr += 6;
   } else if (code_point >= 0xdc00 && code_point <= 0xdfff) {
       // If we encounter a low surrogate (not preceded by a high surrogate)
@@ -9266,6 +9286,14 @@ using namespace simd;
       this->error |= this->prev_incomplete;
     }
 
+#ifndef SIMDJSON_IF_CONSTEXPR
+#if SIMDJSON_CPLUSPLUS17
+#define SIMDJSON_IF_CONSTEXPR if constexpr
+#else
+#define SIMDJSON_IF_CONSTEXPR if
+#endif
+#endif
+
     simdjson_inline void check_next_input(const simd8x64<uint8_t>& input) {
       if(simdjson_likely(is_ascii(input))) {
         this->error |= this->prev_incomplete;
@@ -9275,12 +9303,12 @@ using namespace simd;
                 ||(simd8x64<uint8_t>::NUM_CHUNKS == 2)
                 || (simd8x64<uint8_t>::NUM_CHUNKS == 4),
                 "We support one, two or four chunks per 64-byte block.");
-        if(simd8x64<uint8_t>::NUM_CHUNKS == 1) {
+        SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 1) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
-        } if(simd8x64<uint8_t>::NUM_CHUNKS == 2) {
+        } else SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 2) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
           this->check_utf8_bytes(input.chunks[1], input.chunks[0]);
-        } else if(simd8x64<uint8_t>::NUM_CHUNKS == 4) {
+        } else SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 4) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
           this->check_utf8_bytes(input.chunks[1], input.chunks[0]);
           this->check_utf8_bytes(input.chunks[2], input.chunks[1]);
@@ -9658,7 +9686,7 @@ private:
  */
 class json_scanner {
 public:
-  json_scanner() {}
+  json_scanner() = default;
   simdjson_inline json_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
   simdjson_inline error_code finish();
@@ -10354,17 +10382,18 @@ simdjson_inline bool handle_unicode_codepoint(const uint8_t **src_ptr,
     }
     uint32_t code_point_2 = jsoncharutils::hex_to_u32_nocheck(*src_ptr + 2);
 
-    // if the first code point is invalid we will get here, as we will go past
-    // the check for being outside the Basic Multilingual plane. If we don't
-    // find a \u immediately afterwards we fail out anyhow, but if we do,
-    // this check catches both the case of the first code point being invalid
-    // or the second code point being invalid.
-    if ((code_point | code_point_2) >> 16) {
+    // We have already checked that the high surrogate is valid and
+    // (code_point - 0xd800) < 1024.
+    //
+    // Check that code_point_2 is in the range 0xdc00..0xdfff
+    // and that code_point_2 was parsed from valid hex.
+    uint32_t low_bit = code_point_2 - 0xdc00;
+    if (low_bit >> 10) {
       return false;
     }
 
     code_point =
-        (((code_point - 0xd800) << 10) | (code_point_2 - 0xdc00)) + 0x10000;
+        (((code_point - 0xd800) << 10) | low_bit) + 0x10000;
     *src_ptr += 6;
   } else if (code_point >= 0xdc00 && code_point <= 0xdfff) {
       // If we encounter a low surrogate (not preceded by a high surrogate)
@@ -11563,6 +11592,14 @@ using namespace simd;
       this->error |= this->prev_incomplete;
     }
 
+#ifndef SIMDJSON_IF_CONSTEXPR
+#if SIMDJSON_CPLUSPLUS17
+#define SIMDJSON_IF_CONSTEXPR if constexpr
+#else
+#define SIMDJSON_IF_CONSTEXPR if
+#endif
+#endif
+
     simdjson_inline void check_next_input(const simd8x64<uint8_t>& input) {
       if(simdjson_likely(is_ascii(input))) {
         this->error |= this->prev_incomplete;
@@ -11572,12 +11609,12 @@ using namespace simd;
                 ||(simd8x64<uint8_t>::NUM_CHUNKS == 2)
                 || (simd8x64<uint8_t>::NUM_CHUNKS == 4),
                 "We support one, two or four chunks per 64-byte block.");
-        if(simd8x64<uint8_t>::NUM_CHUNKS == 1) {
+        SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 1) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
-        } if(simd8x64<uint8_t>::NUM_CHUNKS == 2) {
+        } else SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 2) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
           this->check_utf8_bytes(input.chunks[1], input.chunks[0]);
-        } else if(simd8x64<uint8_t>::NUM_CHUNKS == 4) {
+        } else SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 4) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
           this->check_utf8_bytes(input.chunks[1], input.chunks[0]);
           this->check_utf8_bytes(input.chunks[2], input.chunks[1]);
@@ -11955,7 +11992,7 @@ private:
  */
 class json_scanner {
 public:
-  json_scanner() {}
+  json_scanner() = default;
   simdjson_inline json_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
   simdjson_inline error_code finish();
@@ -12651,17 +12688,18 @@ simdjson_inline bool handle_unicode_codepoint(const uint8_t **src_ptr,
     }
     uint32_t code_point_2 = jsoncharutils::hex_to_u32_nocheck(*src_ptr + 2);
 
-    // if the first code point is invalid we will get here, as we will go past
-    // the check for being outside the Basic Multilingual plane. If we don't
-    // find a \u immediately afterwards we fail out anyhow, but if we do,
-    // this check catches both the case of the first code point being invalid
-    // or the second code point being invalid.
-    if ((code_point | code_point_2) >> 16) {
+    // We have already checked that the high surrogate is valid and
+    // (code_point - 0xd800) < 1024.
+    //
+    // Check that code_point_2 is in the range 0xdc00..0xdfff
+    // and that code_point_2 was parsed from valid hex.
+    uint32_t low_bit = code_point_2 - 0xdc00;
+    if (low_bit >> 10) {
       return false;
     }
 
     code_point =
-        (((code_point - 0xd800) << 10) | (code_point_2 - 0xdc00)) + 0x10000;
+        (((code_point - 0xd800) << 10) | low_bit) + 0x10000;
     *src_ptr += 6;
   } else if (code_point >= 0xdc00 && code_point <= 0xdfff) {
       // If we encounter a low surrogate (not preceded by a high surrogate)
@@ -13895,6 +13933,14 @@ using namespace simd;
       this->error |= this->prev_incomplete;
     }
 
+#ifndef SIMDJSON_IF_CONSTEXPR
+#if SIMDJSON_CPLUSPLUS17
+#define SIMDJSON_IF_CONSTEXPR if constexpr
+#else
+#define SIMDJSON_IF_CONSTEXPR if
+#endif
+#endif
+
     simdjson_inline void check_next_input(const simd8x64<uint8_t>& input) {
       if(simdjson_likely(is_ascii(input))) {
         this->error |= this->prev_incomplete;
@@ -13904,12 +13950,12 @@ using namespace simd;
                 ||(simd8x64<uint8_t>::NUM_CHUNKS == 2)
                 || (simd8x64<uint8_t>::NUM_CHUNKS == 4),
                 "We support one, two or four chunks per 64-byte block.");
-        if(simd8x64<uint8_t>::NUM_CHUNKS == 1) {
+        SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 1) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
-        } if(simd8x64<uint8_t>::NUM_CHUNKS == 2) {
+        } else SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 2) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
           this->check_utf8_bytes(input.chunks[1], input.chunks[0]);
-        } else if(simd8x64<uint8_t>::NUM_CHUNKS == 4) {
+        } else SIMDJSON_IF_CONSTEXPR (simd8x64<uint8_t>::NUM_CHUNKS == 4) {
           this->check_utf8_bytes(input.chunks[0], this->prev_input_block);
           this->check_utf8_bytes(input.chunks[1], input.chunks[0]);
           this->check_utf8_bytes(input.chunks[2], input.chunks[1]);
@@ -14287,7 +14333,7 @@ private:
  */
 class json_scanner {
 public:
-  json_scanner() {}
+  json_scanner() = default;
   simdjson_inline json_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
   simdjson_inline error_code finish();
@@ -14983,17 +15029,18 @@ simdjson_inline bool handle_unicode_codepoint(const uint8_t **src_ptr,
     }
     uint32_t code_point_2 = jsoncharutils::hex_to_u32_nocheck(*src_ptr + 2);
 
-    // if the first code point is invalid we will get here, as we will go past
-    // the check for being outside the Basic Multilingual plane. If we don't
-    // find a \u immediately afterwards we fail out anyhow, but if we do,
-    // this check catches both the case of the first code point being invalid
-    // or the second code point being invalid.
-    if ((code_point | code_point_2) >> 16) {
+    // We have already checked that the high surrogate is valid and
+    // (code_point - 0xd800) < 1024.
+    //
+    // Check that code_point_2 is in the range 0xdc00..0xdfff
+    // and that code_point_2 was parsed from valid hex.
+    uint32_t low_bit = code_point_2 - 0xdc00;
+    if (low_bit >> 10) {
       return false;
     }
 
     code_point =
-        (((code_point - 0xd800) << 10) | (code_point_2 - 0xdc00)) + 0x10000;
+        (((code_point - 0xd800) << 10) | low_bit) + 0x10000;
     *src_ptr += 6;
   } else if (code_point >= 0xdc00 && code_point <= 0xdfff) {
       // If we encounter a low surrogate (not preceded by a high surrogate)
