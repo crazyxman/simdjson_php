@@ -29,13 +29,15 @@ if test "$PHP_SIMDJSON" != "no"; then
                         [CXXFLAGS="$CXXFLAGS -fvisibility=hidden"])
 
   AC_DEFINE(HAVE_SIMDJSON, 1, [whether simdjson is enabled])
+  dnl Disable exceptions because PHP is written in C and loads this C++ module, handle errors manually.
+  dnl Disable development checks of C simdjson library in php debug builds (can manually override)
   PHP_NEW_EXTENSION(simdjson, [
       php_simdjson.cpp                    \
       src/bindings.cpp                    \
       src/simdjson.cpp],
-    $ext_shared,, "-std=c++17 -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1", cxx)
+    $ext_shared,, "-std=c++17 -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 -DSIMDJSON_EXCEPTIONS=0 -DSIMDJSON_DEVELOPMENT_CHECKS=0", cxx)
 
-  PHP_INSTALL_HEADERS([ext/simdjson], [php_simdjson.h])
+  PHP_INSTALL_HEADERS([ext/simdjson], [php_simdjson.h, src/bindings.h src/bindings_impl.h])
   PHP_ADD_MAKEFILE_FRAGMENT
   PHP_ADD_BUILD_DIR(src, 1)
 fi

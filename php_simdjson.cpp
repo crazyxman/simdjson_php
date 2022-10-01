@@ -20,13 +20,18 @@ extern "C" {
 #include "zend_exceptions.h"
 #include "main/SAPI.h"
 #include "ext/standard/info.h"
+#include "ext/spl/spl_exceptions.h"
 
 #include "php_simdjson.h"
+#include "simdjson_arginfo.h"
 }
 
 #include "src/bindings.h"
+#include "src/simdjson.h"
 
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
+
+ZEND_API zend_class_entry *simdjson_exception_ce;
 
 #if PHP_VERSION_ID >= 70200
 #define SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
@@ -66,29 +71,15 @@ SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_key_count_arginfo, 0, 
         ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-extern simdjson::dom::parser* cplus_simdjson_create_parser(void);
-
-extern void cplus_simdjson_free_parser(simdjson::dom::parser* parser);
-
-extern bool cplus_simdjson_is_valid(simdjson::dom::parser& parser, const char *json, size_t len, size_t depth);
-
-extern void cplus_simdjson_parse(simdjson::dom::parser& parser, const char *json, size_t len, zval *return_value, unsigned char assoc, size_t depth);
-
-extern void cplus_simdjson_key_value(simdjson::dom::parser& parser, const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc, size_t depth);
-
-extern u_short cplus_simdjson_key_exists(simdjson::dom::parser& parser, const char *json, size_t len, const char *key, size_t depth);
-
-extern void cplus_simdjson_key_count(simdjson::dom::parser& parser, const char *json, size_t len, const char *key, zval *return_value, size_t depth);
-
 #define SIMDJSON_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(simdjson, v)
-static simdjson::dom::parser &simdjson_get_parser() {
-    simdjson::dom::parser *parser = (simdjson::dom::parser *)SIMDJSON_G(parser);
+static simdjson_php_parser *simdjson_get_parser() {
+    simdjson_php_parser *parser = SIMDJSON_G(parser);
     if (parser == NULL) {
         parser = cplus_simdjson_create_parser();
         SIMDJSON_G(parser) = parser;
         ZEND_ASSERT(parser != NULL);
     }
-    return *parser;
+    return parser;
 }
 
 // The simdjson parser accepts strings with at most 32-bit lengths, for now.
@@ -128,7 +119,10 @@ PHP_FUNCTION (simdjson_decode) {
     if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
-    cplus_simdjson_parse(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), return_value, assoc, depth);
+    simdjson_php_error_code error = cplus_simdjson_parse(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), return_value, assoc, depth);
+    if (error) {
+        cplus_simdjson_throw_jsonexception(error);
+    }
 }
 
 PHP_FUNCTION (simdjson_key_value) {
@@ -143,7 +137,10 @@ PHP_FUNCTION (simdjson_key_value) {
     if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
-    cplus_simdjson_key_value(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, assoc, depth);
+    simdjson_php_error_code error = cplus_simdjson_key_value(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, assoc, depth);
+    if (error) {
+        cplus_simdjson_throw_jsonexception(error);
+    }
 }
 
 PHP_FUNCTION (simdjson_key_count) {
@@ -156,7 +153,10 @@ PHP_FUNCTION (simdjson_key_count) {
     if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
-    cplus_simdjson_key_count(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, depth);
+    simdjson_php_error_code error = cplus_simdjson_key_count(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, depth);
+    if (error) {
+        cplus_simdjson_throw_jsonexception(error);
+    }
 }
 
 PHP_FUNCTION (simdjson_key_exists) {
@@ -202,7 +202,42 @@ ZEND_TSRMLS_CACHE_UPDATE();
 
 /** {{{ PHP_MINIT_FUNCTION
 */
+#define SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(errcode) REGISTER_LONG_CONSTANT("SIMDJSON_ERR_" #errcode, simdjson::errcode, CONST_PERSISTENT)
+#define SIMDJSON_REGISTER_CUSTOM_ERROR_CODE_CONSTANT(errcode, val) REGISTER_LONG_CONSTANT("SIMDJSON_ERR_" #errcode, (val), CONST_PERSISTENT)
 PHP_MINIT_FUNCTION (simdjson) {
+	simdjson_exception_ce = register_class_SimdJsonException(spl_ce_RuntimeException);
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(CAPACITY);                   ///< This parser can't support a document that big
+    // SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(MEMALLOC);                   ///< Error allocating memory, most likely out of memory
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(TAPE_ERROR);                 ///< Something went wrong, this is a generic error
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(DEPTH_ERROR);                ///< Your document exceeds the user-specified depth limitation
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(STRING_ERROR);               ///< Problem while parsing a string
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(T_ATOM_ERROR);               ///< Problem while parsing an atom starting with the letter 't'
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(F_ATOM_ERROR);               ///< Problem while parsing an atom starting with the letter 'f'
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(N_ATOM_ERROR);               ///< Problem while parsing an atom starting with the letter 'n'
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(NUMBER_ERROR);               ///< Problem while parsing a number
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(UTF8_ERROR);                 ///< the input is not valid UTF-8
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(UNINITIALIZED);              ///< unknown error, or uninitialized document
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(EMPTY);                      ///< no structural element found
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(UNESCAPED_CHARS);            ///< found unescaped characters in a string.
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(UNCLOSED_STRING);            ///< missing quote at the end
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(UNSUPPORTED_ARCHITECTURE);   ///< unsupported architecture
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(INCORRECT_TYPE);             ///< JSON element has a different type than user expected
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(NUMBER_OUT_OF_RANGE);        ///< JSON number does not fit in 64 bits
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(INDEX_OUT_OF_BOUNDS);        ///< JSON array index too large
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(NO_SUCH_FIELD);              ///< JSON field not found in object
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(IO_ERROR);                   ///< Error reading a file
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(INVALID_JSON_POINTER);       ///< Invalid JSON pointer reference
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(INVALID_URI_FRAGMENT);       ///< Invalid URI fragment
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(UNEXPECTED_ERROR);           ///< indicative of a bug in simdjson
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(PARSER_IN_USE);              ///< parser is already in use.
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(OUT_OF_ORDER_ITERATION);     ///< tried to iterate an array or object out of order
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(INSUFFICIENT_PADDING);       ///< The JSON doesn't have enough padding for simdjson to safely parse it.
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(INCOMPLETE_ARRAY_OR_OBJECT); ///< The document ends early.
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(SCALAR_DOCUMENT_AS_VALUE);   ///< A scalar document is treated as a value.
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(OUT_OF_BOUNDS);              ///< Attempted to access location outside of document.
+    SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(TRAILING_CONTENT);           ///< Unexpected trailing content in the JSON input
+    SIMDJSON_REGISTER_CUSTOM_ERROR_CODE_CONSTANT(INVALID_PROPERTY, 255); ///< Invalid property
+
     return SUCCESS;
 }
 /* }}} */
@@ -225,9 +260,9 @@ PHP_RINIT_FUNCTION (simdjson) {
 /** {{{ PHP_RSHUTDOWN_FUNCTION
 */
 PHP_RSHUTDOWN_FUNCTION (simdjson) {
-    void *parser = SIMDJSON_G(parser);
+    simdjson_php_parser *parser = SIMDJSON_G(parser);
     if (parser != NULL) {
-        cplus_simdjson_free_parser((simdjson::dom::parser *) parser);
+        cplus_simdjson_free_parser(parser);
         SIMDJSON_G(parser) = NULL;
     }
     return SUCCESS;

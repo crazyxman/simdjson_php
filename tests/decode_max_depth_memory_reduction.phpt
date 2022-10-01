@@ -27,9 +27,9 @@ Test depth=1024:
 array(0) {
 }
 int(0)
-Caught RuntimeException: The JSON document was too deep (too many nested objects and arrays)
+Caught SimdJsonException: The JSON document was too deep (too many nested objects and arrays)
 Test depth=134217728:
 array(0) {
 }
 int(0)
-Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
+Caught SimdJsonException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
