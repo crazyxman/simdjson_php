@@ -33,39 +33,27 @@ echo "Done\n";
 ?>
 --EXPECT--
 bool(true)
-SUCCESS
 NULL
-ERROR
 array(1) {
   [0]=>
   bool(true)
 }
-SUCCESS
 NULL
-ERROR
 
 bool(false)
-SUCCESS
 NULL
-ERROR
 array(1) {
   [0]=>
   bool(false)
 }
-SUCCESS
 NULL
-ERROR
 
 NULL
-SUCCESS
 NULL
-ERROR
 array(1) {
   [0]=>
   NULL
 }
-SUCCESS
 NULL
-ERROR
 
 Done

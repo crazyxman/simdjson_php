@@ -55,116 +55,116 @@ AS ARRAY
 string(58) "A JSON payload should be an object or array, not a string."
 Testing: ["Unclosed array"
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: {unquoted_key: "keys must be quoted}
 AS OBJECT
-NULL
+Caught RuntimeException: A string is opened, but never closed.
 AS ARRAY
-NULL
+Caught RuntimeException: A string is opened, but never closed.
 Testing: ["extra comma",]
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: ["double extra comma",,]
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: [   , "<-- missing value"]
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: ["Comma after the close"],
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: ["Extra close"]]
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: {"Extra comma": true,}
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: {"Extra value after close": true} "misplaced quoted value"
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: {"Illegal expression": 1 + 2}
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: {"Illegal invocation": alert()}
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: {"Numbers cannot have leading zeroes": 013}
 AS OBJECT
-NULL
+Caught RuntimeException: Problem while parsing a number
 AS ARRAY
-NULL
+Caught RuntimeException: Problem while parsing a number
 Testing: {"Numbers cannot be hex": 0x14}
 AS OBJECT
-NULL
+Caught RuntimeException: Problem while parsing a number
 AS ARRAY
-NULL
+Caught RuntimeException: Problem while parsing a number
 Testing: ["Illegal backslash escape: \x15"]
 AS OBJECT
-NULL
+Caught RuntimeException: Problem while parsing a string
 AS ARRAY
-NULL
+Caught RuntimeException: Problem while parsing a string
 Testing: ["Illegal backslash escape: \'"]
 AS OBJECT
-NULL
+Caught RuntimeException: Problem while parsing a string
 AS ARRAY
-NULL
+Caught RuntimeException: Problem while parsing a string
 Testing: ["Illegal backslash escape: \017"]
 AS OBJECT
-NULL
+Caught RuntimeException: Problem while parsing a string
 AS ARRAY
-NULL
+Caught RuntimeException: Problem while parsing a string
 Testing: [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[["Too deep"]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document was too deep (too many nested objects and arrays)
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document was too deep (too many nested objects and arrays)
 Testing: {"Missing colon" null}
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: {"Double colon":: null}
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: {"Comma instead of colon", null}
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: ["Colon instead of comma": false]
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 Testing: ["Bad value", truth]
 AS OBJECT
-NULL
+Caught RuntimeException: Problem while parsing an atom starting with the letter 't'
 AS ARRAY
-NULL
+Caught RuntimeException: Problem while parsing an atom starting with the letter 't'
 Testing: ['single quote']
 AS OBJECT
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 AS ARRAY
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.

@@ -8,23 +8,17 @@ function compat_decode($value) {
     try {
         return simdjson_decode($value);
     } catch (RuntimeException $e) {
-        $lasterr = 1;
+        return sprintf("%s: %s", get_class($e), $e->getMessage());
     }
 }
 var_dump(compat_decode(FALSE));
-var_dump($lasterr);
 var_dump(compat_decode(""));
-var_dump($lasterr);
 
 var_dump(compat_decode(0));
-var_dump($lasterr);
 var_dump(compat_decode(1));
-var_dump($lasterr);
 var_dump(compat_decode(TRUE));
-var_dump($lasterr);
 
 compat_decode("\xED\xA0\xB4");
-var_dump($lasterr);
 
 compat_decode("\x00");
 var_dump($lasterr);
@@ -36,17 +30,11 @@ compat_decode("\"\x00\"");
 var_dump($lasterr);
 ?>
 --EXPECT--
-NULL
-int(4)
-NULL
-int(4)
-int(0)
+string(38) "RuntimeException: Empty: no JSON found"
+string(38) "RuntimeException: Empty: no JSON found"
 int(0)
 int(1)
-int(0)
 int(1)
 int(0)
-int(5)
-int(3)
-int(5)
-int(3)
+int(0)
+int(0)
