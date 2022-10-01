@@ -18,10 +18,10 @@
   <active>yes</active>
  </lead>
  -->
- <date>2022-08-30</date>
+ <date>2022-09-30</date>
  <version>
-  <release>2.0.4dev</release>
-  <api>2.0.4dev</api>
+  <release>2.0.4</release>
+  <api>2.0.4</api>
  </version>
  <stability>
   <release>stable</release>
@@ -30,6 +30,8 @@
  <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
  <notes>
 * Add `-fvisibility=hidden` to compiler options to reduce compiled extension size by avoiding exporting symbols by default.
+* If the requested json parsing $depth is excessively large when reallocating larger buffers for the C simdjson parser,
+  then internally use a smaller $depth that would behave identically with lower memory usage. (#66)
  </notes>
  <contents>
   <dir name="/">
@@ -55,6 +57,7 @@
     <file name="decode_integer_overflow.phpt" role="test"/>
     <file name="decode_invalid_property.phpt" role="test"/>
     <file name="decode_max_depth.phpt" role="test"/>
+    <file name="decode_max_depth_memory_reduction.phpt" role="test"/>
     <file name="decode_result.phpt" role="test"/>
     <file name="decode_strict_types.phpt" role="test"/>
     <file name="decode_types.phpt" role="test"/>
