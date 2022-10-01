@@ -22,7 +22,7 @@ RUN set -xe \
     && cd /tmp/simdjson \
         && phpize  \
         && ./configure  \
-        && make  \
+        && make -j$(nproc)  \
         && make install \
         && make test \
         && rm -rf /tmp/simdjson \

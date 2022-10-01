@@ -68,6 +68,7 @@
     <file name="key_count.phpt" role="test"/>
     <file name="key_count_args.phpt" role="test"/>
     <file name="key_count_exception.phpt" role="test"/>
+    <file name="key_count_large.phpt" role="test"/>
     <file name="key_exists.phpt" role="test"/>
     <file name="key_exists_args.phpt" role="test"/>
     <file name="key_value_args.phpt" role="test"/>

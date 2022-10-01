@@ -1,9 +1,5 @@
 --TEST--
 simdjson_decode args test
-
---SKIPIF--
-<?php ?>
-
 --FILE--
 <?php
 $reflection = new \ReflectionFunction('\simdjson_decode');

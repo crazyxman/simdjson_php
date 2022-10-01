@@ -1,9 +1,5 @@
 --TEST--
 simdjson_key_value args test
-
---SKIPIF--
-<?php ?>
-
 --FILE--
 <?php
 $reflection = new \ReflectionFunction('\simdjson_key_value');

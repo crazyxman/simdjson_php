@@ -1,9 +1,5 @@
 --TEST--
 simdjson_is_valid args test
-
---SKIPIF--
-<?php ?>
-
 --FILE--
 <?php
 $reflection = new \ReflectionFunction('\simdjson_is_valid');
