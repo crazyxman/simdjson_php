@@ -148,7 +148,7 @@ function simdjson_key_value(string $json, string $key, bool $assoc = unknown, in
 
 There are some differences from `json_decode()` due to the implementation of the underlying simdjson library. This will throw a RuntimeException if simdjson rejects the JSON.
 
-1) `simdjson_decode()`  how out of range 64-bit integers and floats are handled.
+1) **Until simdjson 2.1.0,** `simdjson_decode()` differed in how out of range 64-bit integers and floats are handled.
 
 See https://github.com/simdjson/simdjson/blob/master/doc/basics.md#standard-compliance
 
