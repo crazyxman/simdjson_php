@@ -1,9 +1,12 @@
 --TEST--
-Bug #68938 (json_decode() decodes empty string without indicating error)
+Bug #68938 compat (json_decode() decodes empty string without indicating error)
 --FILE--
 <?php
-json_decode("");
-var_dump(json_last_error());
+try {
+    simdjson_decode("");
+} catch (RuntimeException $e) {
+    printf("Caught %s: %s\n", get_class($e), $e->getMessage());
+}
 ?>
 --EXPECT--
-int(4)
+Caught RuntimeException: Empty: no JSON found

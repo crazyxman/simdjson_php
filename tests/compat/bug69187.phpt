@@ -1,30 +1,39 @@
 --TEST--
-Bug #69187 json_last_error return BC in PHP7
+Bug #69187 compat json_last_error return BC in PHP7
 --FILE--
 <?php
-var_dump(json_decode(FALSE));
-var_dump(json_last_error());
-var_dump(json_decode(""));
-var_dump(json_last_error());
+function compat_decode($value) {
+    global $lasterr;
+    $lasterr = 0;
+    try {
+        return simdjson_decode($value);
+    } catch (RuntimeException $e) {
+        $lasterr = 1;
+    }
+}
+var_dump(compat_decode(FALSE));
+var_dump($lasterr);
+var_dump(compat_decode(""));
+var_dump($lasterr);
 
-var_dump(json_decode(0));
-var_dump(json_last_error());
-var_dump(json_decode(1));
-var_dump(json_last_error());
-var_dump(json_decode(TRUE));
-var_dump(json_last_error());
+var_dump(compat_decode(0));
+var_dump($lasterr);
+var_dump(compat_decode(1));
+var_dump($lasterr);
+var_dump(compat_decode(TRUE));
+var_dump($lasterr);
 
-json_decode("\xED\xA0\xB4");
-var_dump(json_last_error());
+compat_decode("\xED\xA0\xB4");
+var_dump($lasterr);
 
-json_decode("\x00");
-var_dump(json_last_error());
+compat_decode("\x00");
+var_dump($lasterr);
 
-json_decode("\"\xED\xA0\xB4\"");
-var_dump(json_last_error());
+compat_decode("\"\xED\xA0\xB4\"");
+var_dump($lasterr);
 
-json_decode("\"\x00\"");
-var_dump(json_last_error());
+compat_decode("\"\x00\"");
+var_dump($lasterr);
 ?>
 --EXPECT--
 NULL

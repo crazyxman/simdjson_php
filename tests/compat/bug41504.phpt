@@ -1,11 +1,11 @@
 --TEST--
-Bug #41504 (json_decode() converts empty array keys to "_empty_")
+Bug #41504 compat (json_decode() converts empty array keys to "_empty_")
 --FILE--
 <?php
 
-var_dump(json_decode('{"":"value"}', true));
-var_dump(json_decode('{"":"value", "key":"value"}', true));
-var_dump(json_decode('{"key":"value", "":"value"}', true));
+var_dump(simdjson_decode('{"":"value"}', true));
+var_dump(simdjson_decode('{"":"value", "key":"value"}', true));
+var_dump(simdjson_decode('{"key":"value", "":"value"}', true));
 
 echo "Done\n";
 ?>

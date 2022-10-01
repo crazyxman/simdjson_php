@@ -1,5 +1,5 @@
 --TEST--
-Bug #41403 (json_decode cannot decode floats if localeconv decimal_point is not '.')
+Bug #41403 compat (json_decode cannot decode floats if localeconv decimal_point is not '.')
 --SKIPIF--
 <?php
 if (setlocale(LC_NUMERIC, "de_DE") === false) {
@@ -12,10 +12,10 @@ serialize_precision=-1
 <?php
 
 setlocale(LC_NUMERIC, 'de_DE');
-var_dump(json_decode('[2.1]'));
-var_dump(json_decode('[0.15]'));
-var_dump(json_decode('[123.13452345]'));
-var_dump(json_decode('[123,13452345]'));
+var_dump(simdjson_decode('[2.1]'));
+var_dump(simdjson_decode('[0.15]'));
+var_dump(simdjson_decode('[123.13452345]'));
+var_dump(simdjson_decode('[123,13452345]'));
 
 echo "Done\n";
 ?>

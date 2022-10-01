@@ -1,10 +1,9 @@
 --TEST--
-Whitespace part of bug #64874 ("json_decode handles whitespace and case-sensitivity incorrectly")
+Whitespace part of bug #64874 compat ("json_decode handles whitespace and case-sensitivity incorrectly")
 --FILE--
 <?php
 function decode($json) {
-    var_dump(json_decode($json));
-    var_dump(json_last_error() !== 0);
+    var_dump(simdjson_decode($json));
     echo "\n";
 }
 
@@ -42,75 +41,51 @@ echo "Done\n";
 ?>
 --EXPECT--
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 bool(true)
-bool(false)
 
 Done

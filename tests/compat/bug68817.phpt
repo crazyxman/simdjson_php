@@ -1,9 +1,9 @@
 --TEST--
-Bug #68817 (Null pointer deference)
+Bug #68817 compat (Null pointer deference)
 --FILE--
 <?php
 
-var_dump(json_decode('[""]'));
+var_dump(simdjson_decode('[""]'));
 
 ?>
 --EXPECT--

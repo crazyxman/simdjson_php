@@ -1,5 +1,7 @@
 --TEST--
-bug #50224 (json_encode() does not always encode a float as a float)
+bug #50224 compat (json_encode() does not always encode a float as a float)
+--SKIPIF--
+<?php if (!function_exists('json_encode')) echo "skip requires json_encode\n"; ?>
 --INI--
 serialize_precision=-1
 --FILE--
@@ -14,13 +16,13 @@ var_dump(json_encode((object)array('float' => 12.0, 'integer' => 12), JSON_PRESE
 
 echo "\n* Testing encode/decode symmetry\n\n";
 
-var_dump(json_decode(json_encode(12.3, JSON_PRESERVE_ZERO_FRACTION)));
-var_dump(json_decode(json_encode(12, JSON_PRESERVE_ZERO_FRACTION)));
-var_dump(json_decode(json_encode(12.0, JSON_PRESERVE_ZERO_FRACTION)));
-var_dump(json_decode(json_encode(0.0, JSON_PRESERVE_ZERO_FRACTION)));
-var_dump(json_decode(json_encode(array(12, 12.0, 12.3), JSON_PRESERVE_ZERO_FRACTION)));
-var_dump(json_decode(json_encode((object)array('float' => 12.0, 'integer' => 12), JSON_PRESERVE_ZERO_FRACTION)));
-var_dump(json_decode(json_encode((object)array('float' => 12.0, 'integer' => 12), JSON_PRESERVE_ZERO_FRACTION), true));
+var_dump(simdjson_decode(json_encode(12.3, JSON_PRESERVE_ZERO_FRACTION)));
+var_dump(simdjson_decode(json_encode(12, JSON_PRESERVE_ZERO_FRACTION)));
+var_dump(simdjson_decode(json_encode(12.0, JSON_PRESERVE_ZERO_FRACTION)));
+var_dump(simdjson_decode(json_encode(0.0, JSON_PRESERVE_ZERO_FRACTION)));
+var_dump(simdjson_decode(json_encode(array(12, 12.0, 12.3), JSON_PRESERVE_ZERO_FRACTION)));
+var_dump(simdjson_decode(json_encode((object)array('float' => 12.0, 'integer' => 12), JSON_PRESERVE_ZERO_FRACTION)));
+var_dump(simdjson_decode(json_encode((object)array('float' => 12.0, 'integer' => 12), JSON_PRESERVE_ZERO_FRACTION), true));
 ?>
 --EXPECTF--
 * Testing JSON output

@@ -1,8 +1,8 @@
 --TEST--
-Test json_decode() function : basic functionality
+Test simdjson_decode() function compat : basic functionality
 --FILE--
 <?php
-echo "*** Testing json_decode() : basic functionality ***\n";
+echo "*** Testing simdjson_decode() : basic functionality ***\n";
 
 // array with different values for $string
 $inputs =  array (
@@ -27,18 +27,18 @@ $inputs =  array (
     '{}'
 );
 
-// loop through with each element of the $inputs array to test json_decode() function
+// loop through with each element of the $inputs array to test simdjson_decode() function
 $count = 1;
 foreach($inputs as $input) {
     echo "-- Iteration $count --\n";
-    var_dump(json_decode($input));
-    var_dump(json_decode($input, true));
+    var_dump(simdjson_decode($input));
+    var_dump(simdjson_decode($input, true));
     $count++;
 }
 
 ?>
 --EXPECTF--
-*** Testing json_decode() : basic functionality ***
+*** Testing simdjson_decode() : basic functionality ***
 -- Iteration 1 --
 int(0)
 int(0)

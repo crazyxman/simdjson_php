@@ -1,5 +1,5 @@
 --TEST--
-JSON (http://www.crockford.com/JSON/JSON_checker/test/fail*.json)
+JSON compat (http://www.crockford.com/JSON/JSON_checker/test/fail*.json)
 --FILE--
 <?php
 
@@ -33,9 +33,17 @@ $tests = array(
 foreach ($tests as $test) {
     echo 'Testing: ' . $test . "\n";
     echo "AS OBJECT\n";
-    var_dump(json_decode($test));
+    try {
+        var_dump(simdjson_decode($test));
+    } catch (RuntimeException $e) {
+        printf("Caught %s: %s\n", get_class($e), $e->getMessage());
+    }
     echo "AS ARRAY\n";
-    var_dump(json_decode($test, true));
+    try {
+        var_dump(simdjson_decode($test, true));
+    } catch (RuntimeException $e) {
+        printf("Caught %s: %s\n", get_class($e), $e->getMessage());
+    }
 }
 
 ?>

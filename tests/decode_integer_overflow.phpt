@@ -39,16 +39,16 @@ float(18446744073709551616)
 Testing '18446744073709551615E0'
 float(18446744073709551616)
 Testing '18446744073709551616'
-Caught RuntimeException: Problem while parsing a number
+float(18446744073709551616)
 Testing '18446744073709551616.0'
 float(18446744073709551616)
 Testing '-9223372036854775808'
 int(-9223372036854775808)
 Testing '-9223372036854775809'
-Caught RuntimeException: Problem while parsing a number
+float(-9223372036854775808)
 Testing '-9223372036854775809.0'
 float(-9223372036854775808)
 Testing '1e307'
 float(9.9999999999999998603E+306)
 Testing '1e309'
-Caught RuntimeException: Problem while parsing a number
+float(INF)

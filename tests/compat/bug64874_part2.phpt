@@ -1,10 +1,13 @@
 --TEST--
-Case-sensitivity part of bug #64874 ("json_decode handles whitespace and case-sensitivity incorrectly")
+Case-sensitivity part of bug #64874 compat ("json_decode handles whitespace and case-sensitivity incorrectly")
 --FILE--
 <?php
 function decode($json) {
-    var_dump(json_decode($json));
-    echo ((json_last_error() !== 0) ? 'ERROR' : 'SUCCESS') . PHP_EOL;
+    try {
+        var_dump(json_decode($json));
+    } catch (RuntimeException $e) {
+        printf("Caught %s: %s\n", get_class($e), $e->getMessage());
+    }
 }
 
 // Only lowercase should work
