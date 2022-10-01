@@ -20,8 +20,8 @@
  -->
  <date>2022-10-01</date>
  <version>
-  <release>2.0.4</release>
-  <api>2.0.4</api>
+  <release>2.0.5</release>
+  <api>2.0.5</api>
  </version>
  <stability>
   <release>stable</release>
@@ -29,10 +29,7 @@
  </stability>
  <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
  <notes>
-* Add `-fvisibility=hidden` to compiler options to reduce compiled extension size by avoiding exporting symbols by default.
-* If the requested json parsing $depth is excessively large when reallocating larger buffers for the C simdjson parser,
-  then internally use a smaller $depth that would behave identically with lower memory usage. (#66)
-* Update simdjson to properly reject surrogate pairs with an invalid low surrogate. (https://en.wikipedia.org/wiki/UTF-16)
+* Reuse PHP's 1-byte and 0-byte interned strings in simdjson_decode, reducing memory usage for those strings. (e.g. for the key/value in '{"x":""}')
  </notes>
  <contents>
   <dir name="/">
@@ -59,6 +56,7 @@
     <file name="decode_invalid_property.phpt" role="test"/>
     <file name="decode_max_depth.phpt" role="test"/>
     <file name="decode_max_depth_memory_reduction.phpt" role="test"/>
+    <file name="decode_repeat.phpt" role="test"/>
     <file name="decode_result.phpt" role="test"/>
     <file name="decode_strict_types.phpt" role="test"/>
     <file name="decode_types.phpt" role="test"/>
@@ -93,6 +91,23 @@
  <providesextension>simdjson</providesextension>
  <extsrcrelease/>
  <changelog>
+   <date>2022-10-01</date>
+   <version>
+     <release>2.0.4</release>
+     <api>2.0.4</api>
+   </version>
+   <stability>
+     <release>stable</release>
+     <api>stable</api>
+   </stability>
+   <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
+   <notes>
+* Add `-fvisibility=hidden` to compiler options to reduce compiled extension size by avoiding exporting symbols by default.
+* If the requested json parsing $depth is excessively large when reallocating larger buffers for the C simdjson parser,
+  then internally use a smaller $depth that would behave identically with lower memory usage. (#66)
+* Update simdjson to fix handling of surrogate pairs with invalid low surrogate.
+   </notes>
+  </release>
   <release>
    <date>2022-08-30</date>
    <version>
