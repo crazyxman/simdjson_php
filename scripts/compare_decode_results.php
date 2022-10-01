@@ -1,4 +1,5 @@
 <?php
+// See comment at bottom file for the results the last time this was run in php 8.2.0-dev
 
 function compare_decode_result(string $filename) {
     echo "$filename: ";
@@ -68,7 +69,7 @@ i_object_key_lone_2nd_surrogate.json: i_object_key_lone_2nd_surrogate.json:
 i_string_1st_surrogate_but_2nd_missing.json: i_string_1st_surrogate_but_2nd_missing.json:
 => same(both throw): JSON(JsonException: Single unpaired UTF-16 surrogate in unicode escape) SIMDJSON(RuntimeException: Problem while parsing a string)
 i_string_1st_valid_surrogate_2nd_invalid.json: i_string_1st_valid_surrogate_2nd_invalid.json:
-=> ERROR: json threw(JsonException Single unpaired UTF-16 surrogate in unicode escape) but simdjson did not throw
+=> same(both throw): JSON(JsonException: Single unpaired UTF-16 surrogate in unicode escape) SIMDJSON(RuntimeException: Problem while parsing a string)
 i_string_UTF-16LE_with_BOM.json: i_string_UTF-16LE_with_BOM.json:
 => same(both throw): JSON(JsonException: Malformed UTF-8 characters, possibly incorrectly encoded) SIMDJSON(RuntimeException: Within strings, some characters must be escaped, we found unescaped characters)
 i_string_UTF-8_invalid_sequence.json: i_string_UTF-8_invalid_sequence.json:
@@ -80,7 +81,7 @@ i_string_incomplete_surrogate_and_escape_valid.json: i_string_incomplete_surroga
 i_string_incomplete_surrogate_pair.json: i_string_incomplete_surrogate_pair.json:
 => same(both throw): JSON(JsonException: Single unpaired UTF-16 surrogate in unicode escape) SIMDJSON(RuntimeException: Problem while parsing a string)
 i_string_incomplete_surrogates_escape_valid.json: i_string_incomplete_surrogates_escape_valid.json:
-=> ERROR: json threw(JsonException Single unpaired UTF-16 surrogate in unicode escape) but simdjson did not throw
+=> same(both throw): JSON(JsonException: Single unpaired UTF-16 surrogate in unicode escape) SIMDJSON(RuntimeException: Problem while parsing a string)
 i_string_invalid_lonely_surrogate.json: i_string_invalid_lonely_surrogate.json:
 => same(both throw): JSON(JsonException: Single unpaired UTF-16 surrogate in unicode escape) SIMDJSON(RuntimeException: Problem while parsing a string)
 i_string_invalid_surrogate.json: i_string_invalid_surrogate.json:
