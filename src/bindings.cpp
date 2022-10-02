@@ -26,8 +26,6 @@ extern "C" {
 #define zend_string_release_ex(s, persistent) zend_string_release((s))
 #endif
 
-#define SIMDJSON_DEPTH_CHECK_THRESHOLD 100000
-
 static inline simdjson::simdjson_result<simdjson::dom::element>
 get_key_with_optional_prefix(simdjson::dom::element &doc, std::string_view json_pointer)
 {
@@ -37,34 +35,42 @@ get_key_with_optional_prefix(simdjson::dom::element &doc, std::string_view json_
 
 static simdjson::error_code
 build_parsed_json_cust(simdjson::dom::parser& parser, simdjson::dom::element &doc, const char *buf, size_t len, bool realloc_if_needed,
-                       size_t depth = simdjson::DEFAULT_MAX_DEPTH) {
-    if (UNEXPECTED(depth > SIMDJSON_DEPTH_CHECK_THRESHOLD) && depth > len && depth > parser.max_depth()) {
-        /*
-         * Choose the depth in a way that both avoids frequent reallocations
-         * and avoids excessive amounts of wasted memory beyond multiples of the largest string ever decoded.
-         *
-         * If the depth is already sufficient to parse a string of length `len`,
-         * then use the parser's previous depth.
-         *
-         * Precondition: depth > len
-         * Postcondition: depth <= original_depth && depth > len
-         */
-        if (len < SIMDJSON_DEPTH_CHECK_THRESHOLD) {
-            depth = SIMDJSON_DEPTH_CHECK_THRESHOLD;
-        } else if (depth > len * 2) {
-            // In callers, simdjson_validate_depth ensures depth <= SIMDJSON_MAX_DEPTH (which is <= SIZE_MAX/8),
-            // so len * 2 is even smaller than the previous depth and won't overflow.
-            depth = len * 2;
+                       size_t depth = simdjson::DEFAULT_MAX_DEPTH) { /* {{{ */
+    if (depth != parser.max_depth()) {
+        if (UNEXPECTED(depth > SIMDJSON_DEPTH_CHECK_THRESHOLD) && depth > len) {
+            /*
+             * Choose the depth in a way that both avoids frequent reallocations
+             * and avoids excessive amounts of wasted memory beyond multiples of the largest string ever decoded.
+             *
+             * If the depth is already sufficient to parse a string of length `len`,
+             * then use the parser's previous depth.
+             *
+             * Precondition: depth > len
+             * Postcondition: depth <= original_depth && depth > len
+             */
+            if (len < SIMDJSON_DEPTH_CHECK_THRESHOLD) {
+                depth = SIMDJSON_DEPTH_CHECK_THRESHOLD;
+            } else if (depth > len * 2) {
+                // In callers, simdjson_validate_depth ensures depth <= SIMDJSON_MAX_DEPTH (which is <= SIZE_MAX/8),
+                // so len * 2 is even smaller than the previous depth and won't overflow.
+                depth = len * 2;
+            }
         }
-    }
-    auto error = parser.allocate(len, depth);
-
-    if (error) {
-        return error;
+        // Allocate is the only api the simdjson::dom::parser class provides to change the max depth.
+        // parse() calls parse_into_document(), which calls ensure_capacity(), which will ensure the capacity is at least as much as needed.
+        SIMDJSON_TRY_ALLOCATE(parser, len, depth);
     }
 
-    error = parser.parse(buf, len, realloc_if_needed).get(doc);
+    // Parse the json into document doc (simdjson::dom::element).
+    //
+    // Note that when realloc_if_needed is true (always, in this extension's PHP functions),
+    // this creates a padded string copy with an extra 64 bytes of initialized padding
+    // after the end of the string.
+    //
+    // The buffers in the parser must not be overwritten or reallocated/freed until we're done processing doc.
+    auto error = parser.parse(buf, len, realloc_if_needed).get(doc);
     if (error) {
+        if (error == simdjson::MEMALLOC) { SIMDJSON_OUT_OF_MEMORY_ERROR_NORETURN(); }
         return error;
     }
 
@@ -234,15 +240,15 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
 
 /* }}} */
 
-simdjson::dom::parser* cplus_simdjson_create_parser(void) /* {{{ */ {
+ZEND_API simdjson::dom::parser* cplus_simdjson_create_parser(void) /* {{{ */ {
     return new simdjson::dom::parser();
 }
 
-void cplus_simdjson_free_parser(simdjson::dom::parser* parser) /* {{{ */ {
+ZEND_API void cplus_simdjson_free_parser(simdjson::dom::parser* parser) /* {{{ */ {
     delete parser;
 }
 
-bool cplus_simdjson_is_valid(simdjson::dom::parser& parser, const char *json, size_t len, size_t depth) /* {{{ */ {
+ZEND_API bool cplus_simdjson_is_valid(simdjson::dom::parser& parser, const char *json, size_t len, size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     /* The depth is passed in to ensure this behaves the same way for the same arguments */
     auto error = build_parsed_json_cust(parser, doc, json, len, true, depth);
@@ -254,7 +260,7 @@ bool cplus_simdjson_is_valid(simdjson::dom::parser& parser, const char *json, si
 
 /* }}} */
 
-void cplus_simdjson_parse(simdjson::dom::parser& parser, const char *json, size_t len, zval *return_value, unsigned char assoc, size_t depth) /* {{{ */ {
+ZEND_API void cplus_simdjson_parse(simdjson::dom::parser& parser, const char *json, size_t len, zval *return_value, unsigned char assoc, size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     auto error = build_parsed_json_cust(parser, doc, json, len, true, depth);
     if (error) {
@@ -269,7 +275,7 @@ void cplus_simdjson_parse(simdjson::dom::parser& parser, const char *json, size_
     }
 }
 /* }}} */
-void cplus_simdjson_key_value(simdjson::dom::parser& parser, const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc,
+ZEND_API void cplus_simdjson_key_value(simdjson::dom::parser& parser, const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc,
                               size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     simdjson::dom::element element;
@@ -295,7 +301,7 @@ void cplus_simdjson_key_value(simdjson::dom::parser& parser, const char *json, s
 
 /* }}} */
 
-u_short cplus_simdjson_key_exists(simdjson::dom::parser& parser, const char *json, size_t len, const char *key, size_t depth) /* {{{ */ {
+ZEND_API u_short cplus_simdjson_key_exists(simdjson::dom::parser& parser, const char *json, size_t len, const char *key, size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     auto error = build_parsed_json_cust(parser, doc, json, len, true, depth);
     if (error) {
@@ -311,7 +317,7 @@ u_short cplus_simdjson_key_exists(simdjson::dom::parser& parser, const char *jso
 /* }}} */
 
 
-void cplus_simdjson_key_count(simdjson::dom::parser& parser, const char *json, size_t len, const char *key, zval *return_value, size_t depth) /* {{{ */ {
+ZEND_API void cplus_simdjson_key_count(simdjson::dom::parser& parser, const char *json, size_t len, const char *key, zval *return_value, size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     simdjson::dom::element element;
 
