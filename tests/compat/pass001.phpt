@@ -66,10 +66,10 @@ $test = "
 
 echo 'Testing:' . $test . "\n";
 echo "DECODE: AS OBJECT\n";
-$obj = json_decode($test);
+$obj = simdjson_decode($test);
 var_dump($obj);
 echo "DECODE: AS ARRAY\n";
-$arr = json_decode($test, true);
+$arr = simdjson_decode($test, true);
 var_dump($arr);
 
 echo "ENCODE: FROM OBJECT\n";
@@ -80,10 +80,10 @@ $arr_enc = json_encode($arr, JSON_PARTIAL_OUTPUT_ON_ERROR);
 echo $arr_enc . "\n";
 
 echo "DECODE AGAIN: AS OBJECT\n";
-$obj = json_decode($obj_enc);
+$obj = simdjson_decode($obj_enc);
 var_dump($obj);
 echo "DECODE AGAIN: AS ARRAY\n";
-$arr = json_decode($arr_enc, true);
+$arr = simdjson_decode($arr_enc, true);
 var_dump($arr);
 
 ?>

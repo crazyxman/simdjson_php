@@ -4,7 +4,7 @@ Case-sensitivity part of bug #64874 compat ("json_decode handles whitespace and 
 <?php
 function decode($json) {
     try {
-        var_dump(json_decode($json));
+        var_dump(simdjson_decode($json));
     } catch (RuntimeException $e) {
         printf("Caught %s: %s\n", get_class($e), $e->getMessage());
     }
@@ -33,27 +33,27 @@ echo "Done\n";
 ?>
 --EXPECT--
 bool(true)
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 array(1) {
   [0]=>
   bool(true)
 }
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 
 bool(false)
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 array(1) {
   [0]=>
   bool(false)
 }
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 
 NULL
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 array(1) {
   [0]=>
   NULL
 }
-NULL
+Caught RuntimeException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
 
 Done
