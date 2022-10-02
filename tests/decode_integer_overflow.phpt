@@ -42,7 +42,7 @@ dump_result('1e-999999');
 dump_result('0e-999');
 dump_result('0.0');
 dump_result('-1e-307');
-dump_result('-1e-999');
+dump_result('-1e-999'); // Tests of https://en.wikipedia.org/wiki/Signed_zero
 dump_result('-0e-999');
 dump_result('-0.0');
 ?>
@@ -92,8 +92,8 @@ float(0)
 Testing '-1e-307'
 float(-9.9999999999999990933E-308)
 Testing '-1e-999'
-float(0)
+float(-0)
 Testing '-0e-999'
-float(0)
+float(-0)
 Testing '-0.0'
 float(-0)
