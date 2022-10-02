@@ -13,6 +13,8 @@
 
 #include "simdjson.h"
 
+extern zend_class_entry *simdjson_exception_ce;
+
 simdjson::dom::parser* cplus_simdjson_create_parser(void);
 void cplus_simdjson_free_parser(simdjson::dom::parser* parser);
 bool cplus_simdjson_is_valid(const char *json, size_t len);

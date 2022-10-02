@@ -4,9 +4,9 @@ Bug #68938 compat (json_decode() decodes empty string without indicating error)
 <?php
 try {
     simdjson_decode("");
-} catch (RuntimeException $e) {
+} catch (SimdJsonException $e) {
     printf("Caught %s: %s\n", get_class($e), $e->getMessage());
 }
 ?>
 --EXPECT--
-Caught RuntimeException: Empty: no JSON found
+Caught SimdJsonException: Empty: no JSON found

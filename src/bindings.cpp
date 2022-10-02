@@ -28,6 +28,11 @@ extern "C" {
 
 #define SIMDJSON_DEPTH_CHECK_THRESHOLD 100000
 
+static void simdjson_throw_jsonexception(simdjson::error_code error)
+{
+    zend_throw_exception(simdjson_exception_ce, simdjson::error_message(error), (zend_long) error);
+}
+
 static inline simdjson::simdjson_result<simdjson::dom::element>
 get_key_with_optional_prefix(simdjson::dom::element &doc, std::string_view json_pointer)
 {
@@ -317,7 +322,7 @@ void cplus_simdjson_parse(simdjson::dom::parser& parser, const char *json, size_
     simdjson::dom::element doc;
     auto error = build_parsed_json_cust(parser, doc, json, len, true, depth);
     if (error) {
-        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
+        simdjson_throw_jsonexception(error);
         return;
     }
 
@@ -334,14 +339,14 @@ void cplus_simdjson_key_value(simdjson::dom::parser& parser, const char *json, s
     simdjson::dom::element element;
     auto error = build_parsed_json_cust(parser, doc, json, len, true, depth);
     if (error) {
-        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
+        simdjson_throw_jsonexception(error);
         return;
     }
 
     error = get_key_with_optional_prefix(doc, key).get(element);
 
     if (error) {
-        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
+        simdjson_throw_jsonexception(error);
         return;
     }
 
@@ -376,13 +381,13 @@ void cplus_simdjson_key_count(simdjson::dom::parser& parser, const char *json, s
 
     auto error = build_parsed_json_cust(parser, doc, json, len, true, depth);
     if (error) {
-        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
+        simdjson_throw_jsonexception(error);
         return;
     }
 
     error = get_key_with_optional_prefix(doc, key).get(element);
     if (error) {
-        zend_throw_exception(spl_ce_RuntimeException, simdjson::error_message(error), 0);
+        simdjson_throw_jsonexception(error);
         return;
     }
 

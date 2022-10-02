@@ -34,6 +34,9 @@
   This allows simdjson_decode() to be used as a replacement for json_decode() in more use cases.
 * Return the correct value in simdjson_key_count() for JSON pointers to arrays/objects exceeding size 0xFFFFFF.
   Previously, this would be limited to returning at most 0xFFFFFF(16777215).
+* Throw 'SimdJsonException extends RuntimeException' instead of RuntimeException.
+* Set the error code from simdjson as SimdJsonException->getCode()
+* Expose error_code constants from simdjson as `SIMDJSON_ERR_$ERRCODENAME`
  </notes>
  <contents>
   <dir name="/">
@@ -45,6 +48,8 @@
    <file name="php_simdjson.h" role="src"/>
    <file name="php_simdjson.cpp" role="src"/>
    <file name="README.md" role="doc"/>
+   <file name="simdjson.stub.php" role="src"/>
+   <file name="simdjson_arginfo.h" role="src"/>
    <dir name="src">
     <file name="bindings.cpp" role="src"/>
     <file name="bindings.h" role="src"/>

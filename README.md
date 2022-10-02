@@ -109,7 +109,7 @@ var_dump($res) //int(5)
 /**
  * Similar to json_decode()
  *
- * @returns array|stdClass|string|float|int|bool|null
+ * @return array|stdClass|string|float|int|bool|null
  * @throws RuntimeException for invalid JSON (or document over 4GB, or out of range integer/float)
  */
 function simdjson_decode(string $json, bool $assoc = false, int $depth = 512) {}
@@ -117,28 +117,28 @@ function simdjson_decode(string $json, bool $assoc = false, int $depth = 512) {}
 /**
  * Returns true if json is valid.
  *
- * @returns ?bool (null if depth is invalid)
+ * @return ?bool (null if depth is invalid)
  */
 function simdjson_is_valid(string $json, int $depth = 512) : ?bool {}
 
 /**
  * Parses $json and returns the number of keys in $json matching the JSON pointer $key
  *
- * @returns ?bool (null if depth is invalid)
+ * @return ?int (null if depth is invalid)
  */
 function simdjson_key_count(string $json, string $key, int $depth = 512) : ?int {}
 
 /**
  * Returns true if the JSON pointer $key could be found.
  *
- * @returns ?bool (null if depth is invalid, false if json is invalid or key is not found)
+ * @return ?bool (null if depth is invalid, false if json is invalid or key is not found)
  */
 function simdjson_key_exists(string $json, string $key, int $depth = 512) : ?bool {}
 
 /**
  * Returns the value at $key
  *
- * @returns array|stdClass|string|float|int|bool|null the value at $key
+ * @return array|stdClass|string|float|int|bool|null the value at $key
  * @throws RuntimeException for invalid JSON (or document over 4GB, or out of range integer/float)
  */
 function simdjson_key_value(string $json, string $key, bool $assoc = unknown, int $depth = unknown) {}
