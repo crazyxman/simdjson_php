@@ -1,5 +1,5 @@
 --TEST--
-simdjson_decode throws for integer syntax out of signed/unsigned 64-bit range due to C simdjson library
+simdjson_decode now allows integer/double syntax out of signed/unsigned 64-bit range and double range, matching json_decode()
 --SKIPIF--
 <?php if (PHP_INT_SIZE < 8) echo "skip 64-bit test only\n"; ?>
 --INI--
@@ -30,6 +30,21 @@ dump_result('-9223372036854775809');
 dump_result('-9223372036854775809.0');
 dump_result('1e307');
 dump_result('1e309');
+dump_result('1e309');
+dump_result('1e999999999999');
+dump_result('-1e307');
+dump_result('-1e309');
+dump_result('-1e999999999999');
+dump_result('1e-307');
+dump_result('1e-999');
+dump_result('1e999999');
+dump_result('1e-999999');
+dump_result('0e-999');
+dump_result('0.0');
+dump_result('-1e-307');
+dump_result('-1e-999');
+dump_result('-0e-999');
+dump_result('-0.0');
 ?>
 --EXPECT--
 Testing '18446744073709551615'
@@ -52,3 +67,33 @@ Testing '1e307'
 float(9.9999999999999998603E+306)
 Testing '1e309'
 float(INF)
+Testing '1e309'
+float(INF)
+Testing '1e999999999999'
+float(INF)
+Testing '-1e307'
+float(-9.9999999999999998603E+306)
+Testing '-1e309'
+float(-INF)
+Testing '-1e999999999999'
+float(-INF)
+Testing '1e-307'
+float(9.9999999999999990933E-308)
+Testing '1e-999'
+float(0)
+Testing '1e999999'
+float(INF)
+Testing '1e-999999'
+float(0)
+Testing '0e-999'
+float(0)
+Testing '0.0'
+float(0)
+Testing '-1e-307'
+float(-9.9999999999999990933E-308)
+Testing '-1e-999'
+float(0)
+Testing '-0e-999'
+float(0)
+Testing '-0.0'
+float(-0)
