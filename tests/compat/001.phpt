@@ -1,5 +1,7 @@
 --TEST--
 Compat simdjson_decode() tests
+--SKIPIF--
+<?php if (PHP_VERSION_ID < 70100) echo "skip php 7.1+ only (empty string in object property name)\n";
 --FILE--
 <?php
 function simdjson_compat_decode($v) {

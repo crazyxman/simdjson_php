@@ -1,5 +1,7 @@
 --TEST--
 JSON (http://www.crockford.com/JSON/JSON_checker/test/pass2.json)
+--SKIPIF--
+<?php if (!function_exists('json_encode')) { echo "skip json_encode not available\n"; } ?>
 --FILE--
 <?php
 

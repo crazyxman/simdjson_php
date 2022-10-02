@@ -1,5 +1,5 @@
 --TEST--
-Bug #41067 compat test (json_encode() problem with UTF-16 input)
+Bug #41067 compat test
 --FILE--
 <?php
 $json = '["\ud834\udd00"]';
