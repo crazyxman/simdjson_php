@@ -1,5 +1,6 @@
-/* auto-generated on 2022-10-01 17:18:43 -0400. Do not edit! */
+/* auto-generated on 2022-10-01 20:09:27 -0400. Do not edit! */
 /* begin file src/simdjson.cpp */
+/* Generated from https://github.com/TysonAndre/simdjson/tree/simdjson_php */
 #include "simdjson.h"
 
 SIMDJSON_PUSH_DISABLE_WARNINGS

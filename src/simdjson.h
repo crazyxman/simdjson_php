@@ -1,7 +1,8 @@
-/* auto-generated on 2022-10-01 17:18:43 -0400. Do not edit! */
+/* auto-generated on 2022-10-01 20:09:27 -0400. Do not edit! */
 /* begin file include/simdjson.h */
 #ifndef SIMDJSON_H
 #define SIMDJSON_H
+/* Generated from https://github.com/TysonAndre/simdjson/tree/simdjson_php */
 
 /**
  * @mainpage
@@ -11191,7 +11192,7 @@ simdjson_inline error_code write_float(const uint8_t *const src, bool negative, 
     static_assert(simdjson::internal::smallest_power <= -342, "smallest_power is not small enough");
     //
     if((exponent < simdjson::internal::smallest_power) || (i == 0)) {
-      WRITE_DOUBLE(0, src, writer);
+      WRITE_DOUBLE(negative ? -0.0 : 0.0, src, writer); // SIMDJSON_PHP patch imitating php's json_decode('-1e-999')
       return SUCCESS;
     } else { // (exponent > largest_power) and (i != 0)
       // We have, for sure, an infinite value and simdjson refuses to parse infinite values.
@@ -12897,7 +12898,7 @@ simdjson_inline error_code write_float(const uint8_t *const src, bool negative, 
     static_assert(simdjson::internal::smallest_power <= -342, "smallest_power is not small enough");
     //
     if((exponent < simdjson::internal::smallest_power) || (i == 0)) {
-      WRITE_DOUBLE(0, src, writer);
+      WRITE_DOUBLE(negative ? -0.0 : 0.0, src, writer); // SIMDJSON_PHP patch imitating php's json_decode('-1e-999')
       return SUCCESS;
     } else { // (exponent > largest_power) and (i != 0)
       // We have, for sure, an infinite value and simdjson refuses to parse infinite values.
@@ -15100,7 +15101,7 @@ simdjson_inline error_code write_float(const uint8_t *const src, bool negative, 
     static_assert(simdjson::internal::smallest_power <= -342, "smallest_power is not small enough");
     //
     if((exponent < simdjson::internal::smallest_power) || (i == 0)) {
-      WRITE_DOUBLE(0, src, writer);
+      WRITE_DOUBLE(negative ? -0.0 : 0.0, src, writer); // SIMDJSON_PHP patch imitating php's json_decode('-1e-999')
       return SUCCESS;
     } else { // (exponent > largest_power) and (i != 0)
       // We have, for sure, an infinite value and simdjson refuses to parse infinite values.
@@ -17290,7 +17291,7 @@ simdjson_inline error_code write_float(const uint8_t *const src, bool negative, 
     static_assert(simdjson::internal::smallest_power <= -342, "smallest_power is not small enough");
     //
     if((exponent < simdjson::internal::smallest_power) || (i == 0)) {
-      WRITE_DOUBLE(0, src, writer);
+      WRITE_DOUBLE(negative ? -0.0 : 0.0, src, writer); // SIMDJSON_PHP patch imitating php's json_decode('-1e-999')
       return SUCCESS;
     } else { // (exponent > largest_power) and (i != 0)
       // We have, for sure, an infinite value and simdjson refuses to parse infinite values.
@@ -19590,7 +19591,7 @@ simdjson_inline error_code write_float(const uint8_t *const src, bool negative, 
     static_assert(simdjson::internal::smallest_power <= -342, "smallest_power is not small enough");
     //
     if((exponent < simdjson::internal::smallest_power) || (i == 0)) {
-      WRITE_DOUBLE(0, src, writer);
+      WRITE_DOUBLE(negative ? -0.0 : 0.0, src, writer); // SIMDJSON_PHP patch imitating php's json_decode('-1e-999')
       return SUCCESS;
     } else { // (exponent > largest_power) and (i != 0)
       // We have, for sure, an infinite value and simdjson refuses to parse infinite values.
@@ -21738,7 +21739,7 @@ simdjson_inline error_code write_float(const uint8_t *const src, bool negative, 
     static_assert(simdjson::internal::smallest_power <= -342, "smallest_power is not small enough");
     //
     if((exponent < simdjson::internal::smallest_power) || (i == 0)) {
-      WRITE_DOUBLE(0, src, writer);
+      WRITE_DOUBLE(negative ? -0.0 : 0.0, src, writer); // SIMDJSON_PHP patch imitating php's json_decode('-1e-999')
       return SUCCESS;
     } else { // (exponent > largest_power) and (i != 0)
       // We have, for sure, an infinite value and simdjson refuses to parse infinite values.
