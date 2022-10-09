@@ -1,9 +1,5 @@
 --TEST--
 simdjson_decode throws exception if json is invalid
-
---SKIPIF--
-<?php ?>
-
 --FILE--
 <?php
 $json = "Invalid JSON string";

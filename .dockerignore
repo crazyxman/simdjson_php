@@ -25,6 +25,7 @@ docker_*
 **/missing
 **/mkinstalldirs
 **/run-tests.php
+**/scripts
 **/Makefile
 **/Makefile.*
 **/!Makefile.frag

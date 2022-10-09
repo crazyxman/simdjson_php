@@ -1,9 +1,5 @@
 --TEST--
 simdjson_key_value throws exception if key was not found test
-
---SKIPIF--
-<?php ?>
-
 --FILE--
 <?php
 $json = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '_files' . DIRECTORY_SEPARATOR . 'result.json');

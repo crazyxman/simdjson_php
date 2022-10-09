@@ -13,7 +13,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php8.2-alpine ."
 
       - name: "Show"
-        run: "docker run --rm simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
 
   PHP81-alpine:
     name: PHP 8.1 Alpine 3.15
@@ -26,7 +26,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php8.1-alpine ."
 
       - name: "Show"
-        run: "docker run --rm simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
 
   PHP80-alpine:
     name: PHP 8.0 Alpine 3.12
@@ -39,7 +39,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php8.0-alpine ."
 
       - name: "Show"
-        run: "docker run --rm simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
 
   PHP74-alpine:
     name: PHP 7.4 Alpine 3.12
@@ -52,7 +52,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php7.4-alpine ."
 
       - name: "Show"
-        run: "docker run --rm simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
 
   PHP73-alpine:
     name: PHP 7.3 Alpine 3.12
@@ -65,7 +65,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php7.3-alpine ."
 
       - name: "Show"
-        run: "docker run --rm simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
 
   PHP72-alpine:
     name: PHP 7.2 Alpine 3.12
@@ -78,7 +78,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php7.2-alpine ."
 
       - name: "Show"
-        run: "docker run --rm simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
 
   PHP71-alpine:
     name: PHP 7.1 Alpine 3.10
@@ -91,7 +91,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php7.1-alpine ."
 
       - name: "Show"
-        run: "docker run --rm simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
 
   Ubuntu:
     strategy:
@@ -117,12 +117,14 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "${{ matrix.php-version }}"
+          extensions: json
           # for correct php-config extension dir, see https://github.com/shivammathur/setup-php/issues/147
           tools: pecl, phpize, php-config
       - name: "Build extension"
         run: |
           export NO_INTERACTION=true
           export REPORT_EXIT_STATUS=1
+          export SIMDJSON_HIGH_MEMORY_TESTS=1
           php-config --extension-dir
           phpize
           ./configure

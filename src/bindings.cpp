@@ -386,17 +386,40 @@ void cplus_simdjson_key_count(simdjson::dom::parser& parser, const char *json, s
         return;
     }
 
-    zval v;
+    zend_long key_count;
     switch (element.type()) {
         //ASCII sort
-        case simdjson::dom::element_type::ARRAY : ZVAL_LONG(&v, uint64_t(element.get_array().value_unsafe().size()));
+        case simdjson::dom::element_type::ARRAY : {
+            auto json_array = element.get_array().value_unsafe();
+            key_count = zend_long(json_array.size());
+            if (UNEXPECTED(key_count == 0xFFFFFF)) {
+                /* The C simdjson library represents array sizes larger than 0xFFFFFF as 0xFFFFFF. */
+                key_count = 0;
+                for (auto it: json_array)  {
+                    key_count++;
+                }
+                ZEND_ASSERT(key_count >= 0xFFFFFF);
+            }
             break;
-        case simdjson::dom::element_type::OBJECT : ZVAL_LONG(&v, uint64_t(element.get_object().value_unsafe().size()));
+        }
+        case simdjson::dom::element_type::OBJECT : {
+            auto json_object = element.get_object().value_unsafe();
+            key_count = zend_long(json_object.size());
+            if (UNEXPECTED(key_count == 0xFFFFFF)) {
+                /* The C simdjson library represents object sizes larger than 0xFFFFFF as 0xFFFFFF. */
+                key_count = 0;
+                for (auto it: json_object) {
+                    key_count++;
+                }
+                ZEND_ASSERT(key_count >= 0xFFFFFF);
+            }
             break;
-        default: ZVAL_LONG(&v, 0);
+        }
+        default:
+            key_count = 0;
             break;
     }
-    *return_value = v;
+    ZVAL_LONG(return_value, key_count);
 }
 
 /* }}} */

@@ -1,9 +1,5 @@
 --TEST--
 simdjson_decode test
-
---SKIPIF--
-<?php ?>
-
 --FILE--
 <?php
 $json = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '_files' . DIRECTORY_SEPARATOR . 'result.json');

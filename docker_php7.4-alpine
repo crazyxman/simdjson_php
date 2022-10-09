@@ -2,6 +2,9 @@
 # Change it in m4 folder
 FROM php:7.4-cli-alpine3.12
 
+# json_encode is used in some phpt test cases
+RUN docker-php-ext-install -j$(nproc) json
+
 COPY . /tmp/simdjson
 
 # persistent / runtime deps
@@ -22,7 +25,7 @@ RUN set -xe \
     && cd /tmp/simdjson \
         && phpize  \
         && ./configure  \
-        && make  \
+        && make -j$(nproc)  \
         && make install \
         && make test \
         && rm -rf /tmp/simdjson \
