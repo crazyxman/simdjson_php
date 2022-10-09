@@ -71,7 +71,46 @@ build_parsed_json_cust(simdjson::dom::parser& parser, simdjson::dom::element &do
     return simdjson::SUCCESS;
 }
 
-/* }}} */
+static zend_always_inline void simdjson_set_zval_to_string(zval *v, const char *buf, size_t len) {
+    /* In php 7.1, the ZSTR_CHAR macro doesn't exist, and CG(one_char_string)[chr] may or may not be null */
+#if PHP_VERSION_ID >= 70200
+    if (len <= 1) {
+        /*
+        A note on performance benefits of the use of interned strings here and elsewhere:
+
+        - PHP doesn't need to allocate a temporary string and initialize it
+        - PHP doesn't need to free the temporary string
+        - PHP doesn't need to compute the hash of the temporary string
+        - Memory usage is reduced because the string representation is reused
+        - String comparisons are faster when the strings are the exact same pointer.
+        - CPU caches may already have this interned string
+        - If all array keys are interned strings, then php can skip the step of
+          freeing array keys when garbage collecting the array.
+         */
+        zend_string *key = len == 1 ? ZSTR_CHAR(buf[0]) : ZSTR_EMPTY_ALLOC();
+        ZVAL_INTERNED_STR(v, key);
+        return;
+    }
+#endif
+    ZVAL_STRINGL(v, buf, len);
+}
+
+static zend_always_inline void simdjson_add_key_to_symtable(HashTable *ht, const char *buf, size_t len, zval *value) {
+#if PHP_VERSION_ID >= 70200
+    if (len <= 1) {
+        /* Look up the interned string (i.e. not reference counted) */
+        zend_string *key = len == 1 ? ZSTR_CHAR(buf[0]) : ZSTR_EMPTY_ALLOC();
+        /* Add the key or update the existing value of the key. */
+        zend_symtable_update(ht, key, value);
+        /* zend_string_release_ex is a no-op for interned strings */
+        return;
+    }
+#endif
+    zend_string *key = zend_string_init(buf, len, 0);
+    zend_symtable_update(ht, key, value);
+    /* Release the reference counted key */
+    zend_string_release_ex(key, 0);
+}
 
 static zend_always_inline void simdjson_set_zval_to_int64(zval *zv, const int64_t value) {
 #if SIZEOF_ZEND_LONG < 8
@@ -89,7 +128,7 @@ static zval create_array(simdjson::dom::element element) /* {{{ */ {
     switch (element.type()) {
         //ASCII sort
         case simdjson::dom::element_type::STRING :
-            ZVAL_STRINGL(&v, element.get_c_str().value_unsafe(), element.get_string_length().value_unsafe());
+            simdjson_set_zval_to_string(&v, element.get_c_str().value_unsafe(), element.get_string_length().value_unsafe());
             break;
         case simdjson::dom::element_type::INT64 :
             simdjson_set_zval_to_int64(&v, element.get_int64().value_unsafe());
@@ -141,9 +180,7 @@ static zval create_array(simdjson::dom::element element) /* {{{ */ {
             for (simdjson::dom::key_value_pair field : json_object) {
                 zval value = create_array(field.value);
                 /* TODO consider using zend_string_init_existing_interned in php 8.1+ to save memory and time freeing strings. */
-                zend_string *key = zend_string_init(field.key.data(), field.key.size(), 0);
-                zend_symtable_update(arr, key, &value);
-                zend_string_release_ex(key, 0);
+                simdjson_add_key_to_symtable(arr, field.key.data(), field.key.size(), &value);
             }
             break;
         }
@@ -161,7 +198,7 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
     switch (element.type()) {
         //ASCII sort
         case simdjson::dom::element_type::STRING :
-            ZVAL_STRINGL(&v, element.get_c_str().value_unsafe(), element.get_string_length().value_unsafe());
+            simdjson_set_zval_to_string(&v, element.get_c_str().value_unsafe(), element.get_string_length().value_unsafe());
             break;
         case simdjson::dom::element_type::INT64 :
             simdjson_set_zval_to_int64(&v, element.get_int64().value_unsafe());
@@ -214,14 +251,36 @@ static zval create_object(simdjson::dom::element element) /* {{{ */ {
                     return v;
                 }
                 zval value = create_object(field.value);
+
+                /* Add the key to the object */
 #if PHP_VERSION_ID >= 80000
-                /* TODO consider using zend_string_init_existing_interned in php 8.1+ to save memory and time freeing strings. */
-                zend_string *key = zend_string_init(data, size, 0);
-                obj->handlers->write_property(obj, key, &value, NULL);
+                zend_string *key;
+                if (size <= 1) {
+                    key = size == 1 ? ZSTR_CHAR(data[0]) : ZSTR_EMPTY_ALLOC();
+                } else {
+                    key = zend_string_init(data, size, 0);
+                }
+                zend_std_write_property(obj, key, &value, NULL);
                 zend_string_release_ex(key, 0);
 #else
-                add_property_zval_ex(&v, data, size, &value);
+
+# if PHP_VERSION_ID >= 70200
+                if (size <= 1) {
+                    zval zkey;
+                    zend_string *key = size == 1 ? ZSTR_CHAR(data[0]) : ZSTR_EMPTY_ALLOC();
+                    ZVAL_INTERNED_STR(&zkey, key);
+                    zend_std_write_property(&v, &zkey, &value, NULL);
+                } else
+# endif
+                {
+                    zval zkey;
+                    ZVAL_STRINGL(&zkey, data, size);
+                    zend_std_write_property(&v, &zkey, &value, NULL);
+                    zval_ptr_dtor_nogc(&zkey);
+                }
 #endif
+                /* After the key is added to the object (incrementing the reference count) ,
+                 * decrement the reference count of the value by one */
                 zval_ptr_dtor_nogc(&value);
             }
             break;

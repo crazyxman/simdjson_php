@@ -6,10 +6,10 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "^7.1"
+        "php": "^7.1|^8.2"
     },
     "require-dev": {
-        "phpbench/phpbench": "^0.17.1"
+        "phpbench/phpbench": "^1.2.6"
     },
     "autoload-dev": {
         "psr-4": {
