@@ -18,7 +18,7 @@
   <active>yes</active>
  </lead>
  -->
- <date>2022-10-01</date>
+ <date>2022-10-12</date>
  <version>
   <release>2.0.5</release>
   <api>2.0.5</api>
@@ -30,6 +30,7 @@
  <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
  <notes>
 * Reuse PHP's 1-byte and 0-byte interned strings in simdjson_decode, reducing memory usage for those strings. (e.g. for the key/value in '{"x":""}')
+* Return correct count in simdjson_key_count. Properly return counts larger than 0xFFFFFF instead of returning 0xFFFFFF.
  </notes>
  <contents>
   <dir name="/">
@@ -92,6 +93,7 @@
  <providesextension>simdjson</providesextension>
  <extsrcrelease/>
  <changelog>
+  <release>
    <date>2022-10-01</date>
    <version>
      <release>2.0.4</release>
