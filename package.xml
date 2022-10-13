@@ -53,6 +53,7 @@
    <dir name="src">
     <file name="bindings.cpp" role="src"/>
     <file name="bindings.h" role="src"/>
+    <file name="bindings_impl.h" role="src"/>
     <file name="simdjson.cpp" role="src"/>
     <file name="simdjson.h" role="src"/>
    </dir>

@@ -26,9 +26,12 @@ extern zend_module_entry simdjson_module_entry;
 
 #define SIMDJSON_PARSE_DEFAULT_DEPTH          512
 
-
-extern PHPAPI void php_var_dump(zval **struc, int level);
-extern PHPAPI void php_debug_zval_dump(zval **struc, int level);
+/*
+ * NOTE: Namespaces and references(&) are C++ only functionality.
+ * To expose this functionality to other C PECLs,
+ * switch to a forward class declaration of a class that only wraps simdjson::dom::parser
+ */
+class simdjson_php_parser;
 
 ZEND_BEGIN_MODULE_GLOBALS(simdjson)
     /*
@@ -36,7 +39,7 @@ ZEND_BEGIN_MODULE_GLOBALS(simdjson)
      * Note that in ZTS builds, the thread for each request will deliberately have different instances for each concurrently running request.
      * (The simdjson library is not thread safe)
      */
-    void *parser;
+    simdjson_php_parser *parser;
 ZEND_END_MODULE_GLOBALS(simdjson)
 
 PHP_MINIT_FUNCTION(simdjson);

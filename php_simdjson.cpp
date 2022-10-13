@@ -27,6 +27,8 @@ extern "C" {
 }
 
 #include "src/bindings.h"
+#include "src/bindings_impl.h"
+#include "src/simdjson.h"
 
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
 
@@ -70,29 +72,15 @@ SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_key_count_arginfo, 0, 
         ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-extern simdjson::dom::parser* cplus_simdjson_create_parser(void);
-
-extern void cplus_simdjson_free_parser(simdjson::dom::parser* parser);
-
-extern bool cplus_simdjson_is_valid(simdjson::dom::parser& parser, const char *json, size_t len, size_t depth);
-
-extern void cplus_simdjson_parse(simdjson::dom::parser& parser, const char *json, size_t len, zval *return_value, unsigned char assoc, size_t depth);
-
-extern void cplus_simdjson_key_value(simdjson::dom::parser& parser, const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc, size_t depth);
-
-extern u_short cplus_simdjson_key_exists(simdjson::dom::parser& parser, const char *json, size_t len, const char *key, size_t depth);
-
-extern void cplus_simdjson_key_count(simdjson::dom::parser& parser, const char *json, size_t len, const char *key, zval *return_value, size_t depth);
-
 #define SIMDJSON_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(simdjson, v)
-static simdjson::dom::parser &simdjson_get_parser() {
-    simdjson::dom::parser *parser = (simdjson::dom::parser *)SIMDJSON_G(parser);
+static simdjson_php_parser *simdjson_get_parser() {
+    simdjson_php_parser *parser = SIMDJSON_G(parser);
     if (parser == NULL) {
         parser = cplus_simdjson_create_parser();
         SIMDJSON_G(parser) = parser;
         ZEND_ASSERT(parser != NULL);
     }
-    return *parser;
+    return parser;
 }
 
 // The simdjson parser accepts strings with at most 32-bit lengths, for now.
@@ -262,9 +250,9 @@ PHP_RINIT_FUNCTION (simdjson) {
 /** {{{ PHP_RSHUTDOWN_FUNCTION
 */
 PHP_RSHUTDOWN_FUNCTION (simdjson) {
-    void *parser = SIMDJSON_G(parser);
+    simdjson_php_parser *parser = SIMDJSON_G(parser);
     if (parser != NULL) {
-        cplus_simdjson_free_parser((simdjson::dom::parser *) parser);
+        cplus_simdjson_free_parser(parser);
         SIMDJSON_G(parser) = NULL;
     }
     return SUCCESS;
