@@ -27,7 +27,6 @@ extern "C" {
 }
 
 #include "src/bindings.h"
-#include "src/bindings_impl.h"
 #include "src/simdjson.h"
 
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
@@ -120,7 +119,10 @@ PHP_FUNCTION (simdjson_decode) {
     if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
-    cplus_simdjson_parse(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), return_value, assoc, depth);
+    simdjson_php_error_code error = cplus_simdjson_parse(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), return_value, assoc, depth);
+    if (error) {
+        cplus_simdjson_throw_jsonexception(error);
+    }
 }
 
 PHP_FUNCTION (simdjson_key_value) {
@@ -135,7 +137,10 @@ PHP_FUNCTION (simdjson_key_value) {
     if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
-    cplus_simdjson_key_value(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, assoc, depth);
+    simdjson_php_error_code error = cplus_simdjson_key_value(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, assoc, depth);
+    if (error) {
+        cplus_simdjson_throw_jsonexception(error);
+    }
 }
 
 PHP_FUNCTION (simdjson_key_count) {
@@ -148,7 +153,10 @@ PHP_FUNCTION (simdjson_key_count) {
     if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
-    cplus_simdjson_key_count(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, depth);
+    simdjson_php_error_code error = cplus_simdjson_key_count(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, depth);
+    if (error) {
+        cplus_simdjson_throw_jsonexception(error);
+    }
 }
 
 PHP_FUNCTION (simdjson_key_exists) {
@@ -195,6 +203,7 @@ ZEND_TSRMLS_CACHE_UPDATE();
 /** {{{ PHP_MINIT_FUNCTION
 */
 #define SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(errcode) REGISTER_LONG_CONSTANT("SIMDJSON_ERR_" #errcode, simdjson::errcode, CONST_PERSISTENT)
+#define SIMDJSON_REGISTER_CUSTOM_ERROR_CODE_CONSTANT(errcode, val) REGISTER_LONG_CONSTANT("SIMDJSON_ERR_" #errcode, (val), CONST_PERSISTENT)
 PHP_MINIT_FUNCTION (simdjson) {
 	simdjson_exception_ce = register_class_SimdJsonException(spl_ce_RuntimeException);
     SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(CAPACITY);                   ///< This parser can't support a document that big
@@ -227,6 +236,7 @@ PHP_MINIT_FUNCTION (simdjson) {
     SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(SCALAR_DOCUMENT_AS_VALUE);   ///< A scalar document is treated as a value.
     SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(OUT_OF_BOUNDS);              ///< Attempted to access location outside of document.
     SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(TRAILING_CONTENT);           ///< Unexpected trailing content in the JSON input
+    SIMDJSON_REGISTER_CUSTOM_ERROR_CODE_CONSTANT(INVALID_PROPERTY, 255); ///< Invalid property
 
     return SUCCESS;
 }

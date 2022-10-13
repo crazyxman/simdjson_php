@@ -26,14 +26,16 @@ extern ZEND_API zend_class_entry *simdjson_exception_ce;
 // To expose this functionality to other C PECLs,
 // switch to a forward class declaration of a class that only wraps simdjson::dom::parser
 class simdjson_php_parser;
+typedef uint8_t simdjson_php_error_code;
 
-simdjson_php_parser* cplus_simdjson_create_parser(void);
-void cplus_simdjson_free_parser(simdjson_php_parser* parser);
-bool cplus_simdjson_is_valid(simdjson_php_parser* parser, const char *json, size_t len, size_t depth);
-void cplus_simdjson_parse(simdjson_php_parser* parser, const char *json, size_t len, zval *return_value, unsigned char assoc, size_t depth);
-void cplus_simdjson_key_value(simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc, size_t depth);
-u_short cplus_simdjson_key_exists(simdjson_php_parser* parser, const char *json, size_t len, const char *key, size_t depth);
-void cplus_simdjson_key_count(simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, size_t depth);
+ZEND_API void cplus_simdjson_throw_jsonexception(simdjson_php_error_code);
+ZEND_API simdjson_php_parser* cplus_simdjson_create_parser(void);
+ZEND_API void cplus_simdjson_free_parser(simdjson_php_parser* parser);
+ZEND_API bool cplus_simdjson_is_valid(simdjson_php_parser* parser, const char *json, size_t len, size_t depth);
+ZEND_API simdjson_php_error_code cplus_simdjson_parse(simdjson_php_parser* parser, const char *json, size_t len, zval *return_value, unsigned char assoc, size_t depth);
+ZEND_API simdjson_php_error_code cplus_simdjson_key_value(simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc, size_t depth);
+ZEND_API u_short cplus_simdjson_key_exists(simdjson_php_parser* parser, const char *json, size_t len, const char *key, size_t depth);
+ZEND_API simdjson_php_error_code cplus_simdjson_key_count(simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, size_t depth);
 
 END_EXTERN_C()
 
