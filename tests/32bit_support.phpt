@@ -1,7 +1,9 @@
 --TEST--
 simdjson_decode test 32-bit
 --INI--
+; Older php versions used precision instead of serialize_precision for var_dump
 serialize_precision=-1
+precision=-1
 --SKIPIF--
 <?php if (PHP_INT_SIZE >= 8) echo "skip 32-bit platforms only\n"; ?>
 --FILE--

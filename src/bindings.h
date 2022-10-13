@@ -11,12 +11,33 @@
   +----------------------------------------------------------------------+
 */
 
-#include "simdjson.h"
+#ifndef SIMDJSON_PHP_BINDINGS_H
+#define SIMDJSON_PHP_BINDINGS_H
 
-simdjson::dom::parser* cplus_simdjson_create_parser(void);
-void cplus_simdjson_free_parser(simdjson::dom::parser* parser);
-bool cplus_simdjson_is_valid(const char *json, size_t len);
-void cplus_simdjson_parse(const char *json, size_t len, zval *return_value, unsigned char assoc, size_t depth);
-void cplus_simdjson_key_value(const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc, size_t depth);
-u_short cplus_simdjson_key_exists(const char *json, size_t len, const char *key, size_t depth);
-void cplus_simdjson_key_count(const char *json, size_t len, const char *key, zval *return_value, size_t depth);
+#include "Zend/zend.h"
+#include "Zend/zend_portability.h"
+
+// TODO: All code in this header file should be changed to go within BEGIN_EXTERN_C/END_EXTERN_C macros (both header definitions, and C++ declarations, including function implementations),
+// so that pecls written in C can use this functionality without separate C++ files to load bindings.h.
+// BEGIN_EXTERN_C is needed for symbols to be mangled using C rules instead of C++ rules in all includers.
+// When I add ZEND_API to declarations and possibly definitions, I get linker errors.
+extern zend_class_entry *simdjson_exception_ce;
+
+// NOTE: Namespaces and references(&) are C++ only functionality.
+// To expose this functionality to other C PECLs,
+// switch to a forward class declaration of a class that only wraps simdjson::dom::parser
+class simdjson_php_parser;
+typedef uint8_t simdjson_php_error_code;
+
+void cplus_simdjson_throw_jsonexception(simdjson_php_error_code);
+simdjson_php_parser* cplus_simdjson_create_parser(void);
+void cplus_simdjson_free_parser(simdjson_php_parser* parser);
+bool cplus_simdjson_is_valid(simdjson_php_parser* parser, const char *json, size_t len, size_t depth);
+simdjson_php_error_code cplus_simdjson_parse(simdjson_php_parser* parser, const char *json, size_t len, zval *return_value, unsigned char assoc, size_t depth);
+simdjson_php_error_code cplus_simdjson_key_value(simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, unsigned char assoc, size_t depth);
+u_short cplus_simdjson_key_exists(simdjson_php_parser* parser, const char *json, size_t len, const char *key, size_t depth);
+simdjson_php_error_code cplus_simdjson_key_count(simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, size_t depth);
+
+// END_EXTERN_C()
+
+#endif

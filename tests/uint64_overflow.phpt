@@ -16,4 +16,4 @@ try {
 --EXPECT--
 9223372036854775808.0
 18446744073709551616.0
-RuntimeException: Problem while parsing a number
+18446744073709551616.0
