@@ -11,6 +11,6 @@ if (PHP_SIMDJSON == "yes") {
     '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 /std:c++latest');
   ADD_SOURCES(configure_module_dirname + '/src', 'simdjson.cpp bindings.cpp', 'simdjson');
   ADD_FLAG('CFLAGS_SIMDJSON', '/I' + configure_module_dirname);
-  PHP_INSTALL_HEADERS('ext/simdjson', 'php_simdjson.h src/bindings.h src/bindings_impl.h');
+  PHP_INSTALL_HEADERS('ext/simdjson', 'php_simdjson.h src/bindings.h src/bindings_defs.h');
 }
 // vim:ft=javascript

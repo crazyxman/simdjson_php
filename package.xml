@@ -53,7 +53,7 @@
    <dir name="src">
     <file name="bindings.cpp" role="src"/>
     <file name="bindings.h" role="src"/>
-    <file name="bindings_impl.h" role="src"/>
+    <file name="bindings_defs.h" role="src"/>
     <file name="simdjson.cpp" role="src"/>
     <file name="simdjson.h" role="src"/>
    </dir>
@@ -88,7 +88,6 @@
     <dir name="compat">
      <file name="001.phpt" role="test"/>
      <file name="bug41067.phpt" role="test"/>
-     <file name="bug41403.phpt" role="test"/>
      <file name="bug41504.phpt" role="test"/>
      <file name="bug45791.phpt" role="test"/>
      <file name="bug47644.phpt" role="test"/>

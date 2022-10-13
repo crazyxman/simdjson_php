@@ -26,12 +26,13 @@ extern "C" {
 #include "simdjson_arginfo.h"
 }
 
+// Both the declaration and the definition of ZEND_API variables, functions must be within an 'extern "C"' block for Windows?
+zend_class_entry *simdjson_exception_ce;
+
 #include "src/bindings.h"
 #include "src/simdjson.h"
 
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
-
-ZEND_API zend_class_entry *simdjson_exception_ce;
 
 #if PHP_VERSION_ID >= 70200
 #define SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \

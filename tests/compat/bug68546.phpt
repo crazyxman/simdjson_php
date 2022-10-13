@@ -1,7 +1,7 @@
 --TEST--
 Bug #68546 compat (json_decode() Fatal error: Cannot access property started with '\0')
 --SKIPIF--
-<?php if (!function_exists('json_encode')) echo "output test requires json_encode\n"; ?>
+<?php if (!function_exists('json_encode')) echo "skip output test requires json_encode\n"; ?>
 --FILE--
 <?php
 
