@@ -54,4 +54,15 @@ ZEND_TSRMLS_CACHE_EXTERN()
 #endif
 #endif
 
+/*
+ * This module defines utilities and helper functions used elsewhere in simdjson.
+ */
+#ifdef PHP_WIN32
+# define PHP_SIMDJSON_API __declspec(dllexport)
+#elif defined(__GNUC__) && __GNUC__ >= 4
+# define PHP_SIMDJSON_API __attribute__ ((visibility("default")))
+#else
+# define PHP_SIMDJSON_API
+#endif
+
 #endif
