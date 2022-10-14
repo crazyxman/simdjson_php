@@ -30,9 +30,11 @@ extern "C" {
  */
 PHP_SIMDJSON_API zend_class_entry *simdjson_exception_ce;
 
-}
+} /* end extern "C" */
 
-#include "src/bindings.h"
+/* C++ header file for simdjson_php helper methods/classes */
+#include "src/simdjson_bindings_defs.h"
+/* Single header file from fork of simdjson C project (to imitate php's handling of infinity/overflowing integers in json_decode) */
 #include "src/simdjson.h"
 
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
@@ -240,7 +242,7 @@ PHP_MINIT_FUNCTION (simdjson) {
     SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(SCALAR_DOCUMENT_AS_VALUE);   ///< A scalar document is treated as a value.
     SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(OUT_OF_BOUNDS);              ///< Attempted to access location outside of document.
     SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(TRAILING_CONTENT);           ///< Unexpected trailing content in the JSON input
-    SIMDJSON_REGISTER_CUSTOM_ERROR_CODE_CONSTANT(INVALID_PROPERTY, 255); ///< Invalid property
+    SIMDJSON_REGISTER_CUSTOM_ERROR_CODE_CONSTANT(INVALID_PROPERTY, INVALID_PHP_PROPERTY); ///< Invalid property
 
     return SUCCESS;
 }
