@@ -106,11 +106,13 @@ var_dump($res) //int(5)
 
 ```php
 <?php
+
 /**
  * Similar to json_decode()
  *
  * @return array|stdClass|string|float|int|bool|null
- * @throws RuntimeException for invalid JSON (or document over 4GB, or out of range integer/float)
+ * @throws SimdJsonException for invalid JSON
+ *                           (or document over 4GB, or out of range integer/float)
  */
 function simdjson_decode(string $json, bool $assoc = false, int $depth = 512) {}
 
@@ -125,6 +127,8 @@ function simdjson_is_valid(string $json, int $depth = 512) : ?bool {}
  * Parses $json and returns the number of keys in $json matching the JSON pointer $key
  *
  * @return ?int (null if depth is invalid)
+ * @throws SimdJsonException for invalid JSON
+ *                           (or document over 4GB, or out of range integer/float)
  */
 function simdjson_key_count(string $json, string $key, int $depth = 512) : ?int {}
 
@@ -132,6 +136,8 @@ function simdjson_key_count(string $json, string $key, int $depth = 512) : ?int 
  * Returns true if the JSON pointer $key could be found.
  *
  * @return ?bool (null if depth is invalid, false if json is invalid or key is not found)
+ * @throws SimdJsonException for invalid JSON
+ *                           (or document over 4GB, or out of range integer/float)
  */
 function simdjson_key_exists(string $json, string $key, int $depth = 512) : ?bool {}
 
@@ -139,9 +145,21 @@ function simdjson_key_exists(string $json, string $key, int $depth = 512) : ?boo
  * Returns the value at $key
  *
  * @return array|stdClass|string|float|int|bool|null the value at $key
- * @throws RuntimeException for invalid JSON (or document over 4GB, or out of range integer/float)
+ * @throws SimdJsonException for invalid JSON
+ *                           (or document over 4GB, or out of range integer/float)
  */
 function simdjson_key_value(string $json, string $key, bool $assoc = unknown, int $depth = unknown) {}
+
+/**
+ * An error thrown by simdjson when processing json.
+ *
+ * The error code is available as $e->getCode().
+ * This can be compared against the `SIMDJSON_ERR_*` constants.
+ *
+ * Before simdjson 2.1.0, a regular RuntimeException with an error code of 0 was thrown.
+ */
+class SimdJsonException extends RuntimeException {
+}
 ```
 
 ## Edge cases

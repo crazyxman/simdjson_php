@@ -18,10 +18,10 @@
   <active>yes</active>
  </lead>
  -->
- <date>2022-10-12</date>
+ <date>2022-10-14</date>
  <version>
-  <release>2.1.0dev</release>
-  <api>2.1.0dev</api>
+  <release>2.1.0</release>
+  <api>2.1.0</api>
  </version>
  <stability>
   <release>stable</release>
