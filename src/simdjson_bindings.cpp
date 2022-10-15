@@ -349,27 +349,27 @@ PHP_SIMDJSON_API bool php_simdjson_is_valid(simdjson_php_parser* parser, const c
 
 /* }}} */
 
-PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_parse(simdjson_php_parser* parser, const char *json, size_t len, zval *return_value, bool assoc, size_t depth) /* {{{ */ {
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_parse(simdjson_php_parser* parser, const char *json, size_t len, zval *return_value, bool associative, size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     simdjson::error_code error = build_parsed_json_cust(parser, doc, json, len, true, depth);
     if (error) {
         return error;
     }
 
-    if (assoc) {
+    if (associative) {
         return create_array(doc, return_value);
     } else {
         return create_object(doc, return_value);
     }
 }
 /* }}} */
-PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_key_value(simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, bool assoc,
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_key_value(simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, bool associative,
                               size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     simdjson::dom::element element;
     SIMDJSON_TRY(build_parsed_json_cust(parser, doc, json, len, true, depth));
     SIMDJSON_TRY(get_key_with_optional_prefix(doc, key).get(element));
-    if (assoc) {
+    if (associative) {
         return create_array(element, return_value);
     } else {
         return create_object(element, return_value);

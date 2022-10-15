@@ -116,7 +116,7 @@ typedef uint8_t simdjson_php_error_code;
 /* NOTE: Callers should check if len is greater than 4GB - simdjson will always return a non zero error code for those */
 
 /* FIXME add php_simdjson_get_default_singleton_parser api */
-/* FIXME add php_simdjson_decode_with_default_singleton_parser(return_value, json, len, bool assoc) */
+/* FIXME add php_simdjson_decode_with_default_singleton_parser(return_value, json, len, bool associative) */
 
 /**
  * Returns the error message corresponding to a given error code returned by a call to simdjson_php.
@@ -133,6 +133,8 @@ PHP_SIMDJSON_API void php_simdjson_throw_jsonexception(simdjson_php_error_code c
  *
  * Callers may use this instead of the shared singleton parser when memory usage is a concern
  * (e.g. the PECLs are likely to be used load a string that's megabytes long in a long-lived php process)
+ *
+ * Callers should free this parser before or during the request shutdown phase.
  */
 PHP_SIMDJSON_API struct simdjson_php_parser* php_simdjson_create_parser(void);
 /**
@@ -144,12 +146,19 @@ PHP_SIMDJSON_API void php_simdjson_free_parser(struct simdjson_php_parser* parse
  */
 PHP_SIMDJSON_API bool php_simdjson_is_valid(struct simdjson_php_parser* parser, const char *json, size_t len, size_t depth);
 /**
+ * Parses the given string into a return code, using the default singleton parser.
+ *
+ * This must be called after simdjson's request initialization phase and before simdjson's request shutdown phase.
+ * (e.g. PECLs should not use this during module or request initialization/shutdown)
+ */
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_parse_default(const char *json, size_t len, zval *return_value, bool associative, size_t depth);
+/**
  * Parses the given string into a return code.
  *
  * If the returned error code is 0, then return_value contains the parsed value.
  * If the returned error code is non-0, then return_value will not be initialized.
  */
-PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_parse(struct simdjson_php_parser* parser, const char *json, size_t len, zval *return_value, bool assoc, size_t depth);
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_parse(struct simdjson_php_parser* parser, const char *json, size_t len, zval *return_value, bool associative, size_t depth);
 /**
  * Parses the part of the given string at the json pointer 'key' into a PHP value at return_value
  *
@@ -161,7 +170,7 @@ PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_parse(struct simdjson_php_
  *
  * @see https://www.rfc-editor.org/rfc/rfc6901.html
  */
-PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_key_value(struct simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, bool assoc, size_t depth);
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_key_value(struct simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, bool associative, size_t depth);
 /**
  * Checks if the json pointer 'key' exists in the given json string.
  *

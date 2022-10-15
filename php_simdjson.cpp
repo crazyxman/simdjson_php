@@ -129,6 +129,10 @@ PHP_FUNCTION (simdjson_is_valid) {
     ZVAL_BOOL(return_value, is_json);
 }
 
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_parse_default(const char *json, size_t len, zval *return_value, bool associative, size_t depth) {
+    return php_simdjson_parse(simdjson_get_parser(), json, len, return_value, associative, depth);
+}
+
 PHP_FUNCTION (simdjson_decode) {
     zend_bool associative = 0;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
