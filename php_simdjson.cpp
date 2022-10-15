@@ -29,6 +29,7 @@ extern "C" {
  * Both the declaration and the definition of PHP_SIMDJSON_API variables, functions must be within an 'extern "C"' block for Windows
  */
 PHP_SIMDJSON_API zend_class_entry *simdjson_exception_ce;
+PHP_SIMDJSON_API zend_class_entry *simdjson_value_error_ce;
 
 } /* end extern "C" */
 
@@ -81,7 +82,7 @@ ZEND_END_ARG_INFO()
 static simdjson_php_parser *simdjson_get_parser() {
     simdjson_php_parser *parser = SIMDJSON_G(parser);
     if (parser == NULL) {
-        parser = cplus_simdjson_create_parser();
+        parser = php_simdjson_create_parser();
         SIMDJSON_G(parser) = parser;
         ZEND_ASSERT(parser != NULL);
     }
@@ -111,7 +112,7 @@ PHP_FUNCTION (simdjson_is_valid) {
     if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
-    bool is_json = cplus_simdjson_is_valid(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), depth);
+    bool is_json = php_simdjson_is_valid(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), depth);
     ZVAL_BOOL(return_value, is_json);
 }
 
@@ -125,9 +126,9 @@ PHP_FUNCTION (simdjson_decode) {
     if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
-    simdjson_php_error_code error = cplus_simdjson_parse(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), return_value, assoc, depth);
+    simdjson_php_error_code error = php_simdjson_parse(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), return_value, assoc, depth);
     if (error) {
-        cplus_simdjson_throw_jsonexception(error);
+        php_simdjson_throw_jsonexception(error);
     }
 }
 
@@ -143,9 +144,9 @@ PHP_FUNCTION (simdjson_key_value) {
     if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
-    simdjson_php_error_code error = cplus_simdjson_key_value(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, assoc, depth);
+    simdjson_php_error_code error = php_simdjson_key_value(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, assoc, depth);
     if (error) {
-        cplus_simdjson_throw_jsonexception(error);
+        php_simdjson_throw_jsonexception(error);
     }
 }
 
@@ -153,15 +154,19 @@ PHP_FUNCTION (simdjson_key_count) {
     zend_string *json = NULL;
     zend_string *key = NULL;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS|l", &json, &key, &depth) == FAILURE) {
+    bool throw_if_uncountable = false;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS|lb", &json, &key, &depth, &throw_if_uncountable) == FAILURE) {
         return;
     }
     if (!simdjson_validate_depth(depth)) {
         RETURN_NULL();
     }
-    simdjson_php_error_code error = cplus_simdjson_key_count(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, depth);
+    simdjson_php_error_code error = php_simdjson_key_count(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, depth, throw_if_uncountable);
     if (error) {
-        cplus_simdjson_throw_jsonexception(error);
+        if (error == SIMDJSON_PHP_ERR_KEY_COUNT_NOT_COUNTABLE && !throw_if_uncountable) {
+            RETURN_LONG(0);
+        }
+        php_simdjson_throw_jsonexception(error);
     }
 }
 
@@ -175,13 +180,16 @@ PHP_FUNCTION (simdjson_key_exists) {
     if (!simdjson_validate_depth(depth)) {
         return;
     }
-    u_short stats = cplus_simdjson_key_exists(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), depth);
-    if (SIMDJSON_PARSE_FAIL == stats) {
-        RETURN_NULL();
-    } else if (SIMDJSON_PARSE_KEY_EXISTS == stats) {
-        RETURN_TRUE;
-    } else if (SIMDJSON_PARSE_KEY_NOEXISTS == stats) {
-        RETURN_FALSE;
+    simdjson_php_error_code error = php_simdjson_key_exists(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), depth);
+    switch (error) {
+        case simdjson::SUCCESS:
+            RETURN_TRUE;
+        case simdjson::NO_SUCH_FIELD:
+        case simdjson::INDEX_OUT_OF_BOUNDS:
+        case simdjson::INCORRECT_TYPE:
+            RETURN_FALSE;
+        default:
+            php_simdjson_throw_jsonexception(error);
     }
 }
 
@@ -212,6 +220,11 @@ ZEND_TSRMLS_CACHE_UPDATE();
 #define SIMDJSON_REGISTER_CUSTOM_ERROR_CODE_CONSTANT(errcode, val) REGISTER_LONG_CONSTANT("SIMDJSON_ERR_" #errcode, (val), CONST_PERSISTENT)
 PHP_MINIT_FUNCTION (simdjson) {
 	simdjson_exception_ce = register_class_SimdJsonException(spl_ce_RuntimeException);
+#if PHP_VERSION_ID >= 80000
+	simdjson_value_error_ce = register_class_SimdJsonValueError(zend_ce_value_error);
+#else
+	simdjson_value_error_ce = register_class_SimdJsonValueError(zend_ce_error);
+#endif
     SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(CAPACITY);                   ///< This parser can't support a document that big
     // SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(MEMALLOC);                   ///< Error allocating memory, most likely out of memory
     SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(TAPE_ERROR);                 ///< Something went wrong, this is a generic error
@@ -242,7 +255,8 @@ PHP_MINIT_FUNCTION (simdjson) {
     SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(SCALAR_DOCUMENT_AS_VALUE);   ///< A scalar document is treated as a value.
     SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(OUT_OF_BOUNDS);              ///< Attempted to access location outside of document.
     SIMDJSON_REGISTER_ERROR_CODE_CONSTANT(TRAILING_CONTENT);           ///< Unexpected trailing content in the JSON input
-    SIMDJSON_REGISTER_CUSTOM_ERROR_CODE_CONSTANT(INVALID_PROPERTY, INVALID_PHP_PROPERTY); ///< Invalid property
+    SIMDJSON_REGISTER_CUSTOM_ERROR_CODE_CONSTANT(KEY_COUNT_NOT_COUNTABLE, SIMDJSON_PHP_ERR_KEY_COUNT_NOT_COUNTABLE); ///< JSON pointer refers to a value that cannot be counted
+    SIMDJSON_REGISTER_CUSTOM_ERROR_CODE_CONSTANT(INVALID_PROPERTY, SIMDJSON_PHP_ERR_INVALID_PHP_PROPERTY); ///< Invalid property name
 
     return SUCCESS;
 }
@@ -268,7 +282,7 @@ PHP_RINIT_FUNCTION (simdjson) {
 PHP_RSHUTDOWN_FUNCTION (simdjson) {
     simdjson_php_parser *parser = SIMDJSON_G(parser);
     if (parser != NULL) {
-        cplus_simdjson_free_parser(parser);
+        php_simdjson_free_parser(parser);
         SIMDJSON_G(parser) = NULL;
     }
     return SUCCESS;

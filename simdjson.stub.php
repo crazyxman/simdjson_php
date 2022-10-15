@@ -9,3 +9,12 @@
 
 class SimdJsonException extends RuntimeException {
 }
+
+/**
+ * Thrown for invalid depths, with similar behavior to php 8.0.
+ *
+ * NOTE: https://www.php.net/valueerror was added in php 8.0.
+ * In older php versions, this extends Error instead.
+ */
+class SimdJsonValueError extends ValueError {
+}

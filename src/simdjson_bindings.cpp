@@ -28,18 +28,21 @@ extern "C" {
 
 #define SIMDJSON_DEPTH_CHECK_THRESHOLD 100000
 
-PHP_SIMDJSON_API const char* cplus_simdjson_error_msg(simdjson_php_error_code error)
+PHP_SIMDJSON_API const char* php_simdjson_error_msg(simdjson_php_error_code error)
 {
-    if (UNEXPECTED(error == INVALID_PHP_PROPERTY)) {
-        return "Invalid property name";
-    } else {
-        return simdjson::error_message((simdjson::error_code) error);
+    switch (error) {
+        case SIMDJSON_PHP_ERR_KEY_COUNT_NOT_COUNTABLE:
+            return "JSON pointer refers to a value that cannot be counted";
+        case SIMDJSON_PHP_ERR_INVALID_PHP_PROPERTY:
+            return "Invalid property name";
+        default:
+            return simdjson::error_message((simdjson::error_code) error);
     }
 }
 
-PHP_SIMDJSON_API void cplus_simdjson_throw_jsonexception(simdjson_php_error_code error)
+PHP_SIMDJSON_API void php_simdjson_throw_jsonexception(simdjson_php_error_code error)
 {
-    zend_throw_exception(simdjson_exception_ce, cplus_simdjson_error_msg(error), (zend_long) error);
+    zend_throw_exception(simdjson_exception_ce, php_simdjson_error_msg(error), (zend_long) error);
 }
 
 static inline simdjson::simdjson_result<simdjson::dom::element>
@@ -276,7 +279,7 @@ static simdjson_php_error_code create_object(simdjson::dom::element element, zva
                     zval_ptr_dtor(return_value);
                     ZVAL_NULL(return_value);
                     /* Use a number that won't be in the simdjson bindings */
-                    return INVALID_PHP_PROPERTY;
+                    return SIMDJSON_PHP_ERR_INVALID_PHP_PROPERTY;
                 }
                 zval value;
                 simdjson_php_error_code error = create_object(field.value, &value);
@@ -326,15 +329,15 @@ static simdjson_php_error_code create_object(simdjson::dom::element element, zva
 
 /* }}} */
 
-PHP_SIMDJSON_API simdjson_php_parser* cplus_simdjson_create_parser(void) /* {{{ */ {
+PHP_SIMDJSON_API simdjson_php_parser* php_simdjson_create_parser(void) /* {{{ */ {
     return new simdjson_php_parser();
 }
 
-PHP_SIMDJSON_API void cplus_simdjson_free_parser(simdjson_php_parser* parser) /* {{{ */ {
+PHP_SIMDJSON_API void php_simdjson_free_parser(simdjson_php_parser* parser) /* {{{ */ {
     delete parser;
 }
 
-PHP_SIMDJSON_API bool cplus_simdjson_is_valid(simdjson_php_parser* parser, const char *json, size_t len, size_t depth) /* {{{ */ {
+PHP_SIMDJSON_API bool php_simdjson_is_valid(simdjson_php_parser* parser, const char *json, size_t len, size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     /* The depth is passed in to ensure this behaves the same way for the same arguments */
     auto error = build_parsed_json_cust(parser, doc, json, len, true, depth);
@@ -346,7 +349,7 @@ PHP_SIMDJSON_API bool cplus_simdjson_is_valid(simdjson_php_parser* parser, const
 
 /* }}} */
 
-PHP_SIMDJSON_API simdjson_php_error_code cplus_simdjson_parse(simdjson_php_parser* parser, const char *json, size_t len, zval *return_value, bool assoc, size_t depth) /* {{{ */ {
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_parse(simdjson_php_parser* parser, const char *json, size_t len, zval *return_value, bool assoc, size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     simdjson::error_code error = build_parsed_json_cust(parser, doc, json, len, true, depth);
     if (error) {
@@ -360,7 +363,7 @@ PHP_SIMDJSON_API simdjson_php_error_code cplus_simdjson_parse(simdjson_php_parse
     }
 }
 /* }}} */
-PHP_SIMDJSON_API simdjson_php_error_code cplus_simdjson_key_value(simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, bool assoc,
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_key_value(simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, bool assoc,
                               size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     simdjson::dom::element element;
@@ -375,22 +378,15 @@ PHP_SIMDJSON_API simdjson_php_error_code cplus_simdjson_key_value(simdjson_php_p
 
 /* }}} */
 
-PHP_SIMDJSON_API u_short cplus_simdjson_key_exists(simdjson_php_parser* parser, const char *json, size_t len, const char *key, size_t depth) /* {{{ */ {
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_key_exists(simdjson_php_parser* parser, const char *json, size_t len, const char *key, size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
-    auto error = build_parsed_json_cust(parser, doc, json, len, true, depth);
-    if (error) {
-        return SIMDJSON_PARSE_KEY_NOEXISTS;
-    }
-    error = get_key_with_optional_prefix(doc, key).error();
-    if (error) {
-        return SIMDJSON_PARSE_KEY_NOEXISTS;
-    }
-    return SIMDJSON_PARSE_KEY_EXISTS;
+    SIMDJSON_TRY(build_parsed_json_cust(parser, doc, json, len, true, depth));
+    return get_key_with_optional_prefix(doc, key).error();
 }
 
 /* }}} */
 
-PHP_SIMDJSON_API simdjson_php_error_code cplus_simdjson_key_count(simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, size_t depth) /* {{{ */ {
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_key_count(simdjson_php_parser* parser, const char *json, size_t len, const char *key, zval *return_value, size_t depth, bool fail_if_uncountable) /* {{{ */ {
     simdjson::dom::element doc;
     simdjson::dom::element element;
 
@@ -430,8 +426,7 @@ PHP_SIMDJSON_API simdjson_php_error_code cplus_simdjson_key_count(simdjson_php_p
             break;
         }
         default:
-            key_count = 0;
-            break;
+            return SIMDJSON_PHP_ERR_KEY_COUNT_NOT_COUNTABLE;
     }
     ZVAL_LONG(return_value, key_count);
     return simdjson::SUCCESS;

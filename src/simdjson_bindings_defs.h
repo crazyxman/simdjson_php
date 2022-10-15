@@ -15,8 +15,6 @@
 
 #include "simdjson.h"
 
-#define INVALID_PHP_PROPERTY 255
-
 // NOTE: Namespaces are C++ only functionality.
 // To expose this functionality to other C PECLs,
 // bindings.h exposes a forward class declaration of a class that only wraps simdjson::dom::parser
