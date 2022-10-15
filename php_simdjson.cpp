@@ -60,14 +60,14 @@ ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(simdjson_decode_arginfo, 0, 0, 1)
         ZEND_ARG_TYPE_INFO(0, json, IS_STRING, 0)
-        ZEND_ARG_TYPE_INFO(0, assoc, _IS_BOOL, 0)
+        ZEND_ARG_TYPE_INFO(0, associative, _IS_BOOL, 0)
         ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(simdjson_key_value_arginfo, 0, 0, 2)
         ZEND_ARG_TYPE_INFO(0, json, IS_STRING, 0)
         ZEND_ARG_TYPE_INFO(0, key, IS_STRING, 0)
-        ZEND_ARG_TYPE_INFO(0, assoc, _IS_BOOL, 0)
+        ZEND_ARG_TYPE_INFO(0, associative, _IS_BOOL, 0)
         ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
@@ -130,16 +130,16 @@ PHP_FUNCTION (simdjson_is_valid) {
 }
 
 PHP_FUNCTION (simdjson_decode) {
-    zend_bool assoc = 0;
+    zend_bool associative = 0;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
     zend_string *json = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|bl", &json, &assoc, &depth) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|bl", &json, &associative, &depth) == FAILURE) {
         RETURN_THROWS();
     }
     if (!simdjson_validate_depth(depth, "simdjson_decode", 2)) {
         RETURN_THROWS();
     }
-    simdjson_php_error_code error = php_simdjson_parse(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), return_value, assoc, depth);
+    simdjson_php_error_code error = php_simdjson_parse(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), return_value, associative, depth);
     if (error) {
         php_simdjson_throw_jsonexception(error);
         RETURN_THROWS();
@@ -149,15 +149,15 @@ PHP_FUNCTION (simdjson_decode) {
 PHP_FUNCTION (simdjson_key_value) {
     zend_string *json = NULL;
     zend_string *key = NULL;
-    zend_bool assoc = 0;
+    zend_bool associative = 0;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS|bl", &json, &key, &assoc, &depth) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS|bl", &json, &key, &associative, &depth) == FAILURE) {
         RETURN_THROWS();
     }
     if (!simdjson_validate_depth(depth, "simdjson_key_value", 4)) {
         RETURN_THROWS();
     }
-    simdjson_php_error_code error = php_simdjson_key_value(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, assoc, depth);
+    simdjson_php_error_code error = php_simdjson_key_value(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, associative, depth);
     if (error) {
         php_simdjson_throw_jsonexception(error);
         RETURN_THROWS();

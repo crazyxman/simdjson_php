@@ -36,7 +36,7 @@
 * Throw a SimdJsonException in simdjson_key_exists on error conditions such as invalid json, to be consistent with other simdjson PHP functions.
 * Add an optional boolean `$throw_if_uncountable = false` to simdjson_key_count.
   When this is overridden to be true, simdjson_key_count will throw a SimdJsonException if the JSON pointer refers to a value that exists but is neither an array nor an object instead of returning 0.
-* Expose simdjson C APIs marked with PHP_SIMDJSON_API in php_simdjson.h to other C projects.
+* Rename the parameter $assoc to $associative in simdjson_decode and simdjson_key_value, to match naming practices used in json_decode()
  </notes>
  <contents>
   <dir name="/">
