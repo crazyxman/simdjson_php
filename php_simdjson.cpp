@@ -38,6 +38,11 @@ PHP_SIMDJSON_API zend_class_entry *simdjson_value_error_ce;
 /* Single header file from fork of simdjson C project (to imitate php's handling of infinity/overflowing integers in json_decode) */
 #include "src/simdjson.h"
 
+/* Define RETURN_THROWS macro in older php versions */
+#ifndef RETURN_THROWS
+#define RETURN_THROWS() do { ZEND_ASSERT(EG(exception)); (void) return_value; return; } while (0)
+#endif
+
 ZEND_DECLARE_MODULE_GLOBALS(simdjson);
 
 #if PHP_VERSION_ID >= 70200
@@ -48,7 +53,7 @@ ZEND_DECLARE_MODULE_GLOBALS(simdjson);
     ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, NULL, allow_null)
 #endif
 
-SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_is_valid_arginfo, 0, 1, _IS_BOOL, 1)
+SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_is_valid_arginfo, 0, 1, _IS_BOOL, 0)
         ZEND_ARG_TYPE_INFO(0, json, IS_STRING, 0)
         ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
@@ -92,12 +97,19 @@ static simdjson_php_parser *simdjson_get_parser() {
 // The simdjson parser accepts strings with at most 32-bit lengths, for now.
 #define SIMDJSON_MAX_DEPTH ((zend_long)((SIZE_MAX / 8) < (UINT32_MAX / 2) ? (SIZE_MAX / 8) : (UINT32_MAX / 2)))
 
-static bool simdjson_validate_depth(zend_long depth) {
+static ZEND_COLD void simdjson_throw_depth_must_be_positive(const char *function_name, const int arg_num) {
+    zend_throw_error(simdjson_value_error_ce, "%s(): Argument #%d ($depth) must be greater than zero", function_name, arg_num);
+}
+static ZEND_COLD void simdjson_throw_depth_too_large(const char *function_name, const int arg_num) {
+    zend_throw_error(simdjson_value_error_ce, "%s(): Argument #%d ($depth) exceeds maximum allowed value of " ZEND_LONG_FMT, function_name, arg_num, SIMDJSON_MAX_DEPTH);
+}
+
+static zend_always_inline bool simdjson_validate_depth(zend_long depth, const char *function_name, const int arg_num) {
     if (UNEXPECTED(depth <= 0)) {
-        php_error_docref(NULL, E_WARNING, "Depth must be greater than zero");
+        simdjson_throw_depth_must_be_positive(function_name, arg_num);
         return false;
     } else if (UNEXPECTED(depth > SIMDJSON_MAX_DEPTH)) {
-        php_error_docref(NULL, E_WARNING, "Depth exceeds maximum allowed value of " ZEND_LONG_FMT, SIMDJSON_MAX_DEPTH);
+        simdjson_throw_depth_too_large(function_name, arg_num);
         return false;
     }
     return true;
@@ -107,10 +119,10 @@ PHP_FUNCTION (simdjson_is_valid) {
     zend_string *json = NULL;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|l", &json, &depth) == FAILURE) {
-        return;
+        RETURN_THROWS();
     }
-    if (!simdjson_validate_depth(depth)) {
-        RETURN_NULL();
+    if (!simdjson_validate_depth(depth, "simdjson_is_valid", 2)) {
+        RETURN_THROWS();
     }
     bool is_json = php_simdjson_is_valid(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), depth);
     ZVAL_BOOL(return_value, is_json);
@@ -121,32 +133,33 @@ PHP_FUNCTION (simdjson_decode) {
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
     zend_string *json = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|bl", &json, &assoc, &depth) == FAILURE) {
-        return;
+        RETURN_THROWS();
     }
-    if (!simdjson_validate_depth(depth)) {
-        RETURN_NULL();
+    if (!simdjson_validate_depth(depth, "simdjson_decode", 2)) {
+        RETURN_THROWS();
     }
     simdjson_php_error_code error = php_simdjson_parse(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), return_value, assoc, depth);
     if (error) {
         php_simdjson_throw_jsonexception(error);
+        RETURN_THROWS();
     }
 }
 
 PHP_FUNCTION (simdjson_key_value) {
-
     zend_string *json = NULL;
     zend_string *key = NULL;
     zend_bool assoc = 0;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS|bl", &json, &key, &assoc, &depth) == FAILURE) {
-        return;
+        RETURN_THROWS();
     }
-    if (!simdjson_validate_depth(depth)) {
-        RETURN_NULL();
+    if (!simdjson_validate_depth(depth, "simdjson_key_value", 4)) {
+        RETURN_THROWS();
     }
     simdjson_php_error_code error = php_simdjson_key_value(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, assoc, depth);
     if (error) {
         php_simdjson_throw_jsonexception(error);
+        RETURN_THROWS();
     }
 }
 
@@ -156,10 +169,10 @@ PHP_FUNCTION (simdjson_key_count) {
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
     bool throw_if_uncountable = false;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS|lb", &json, &key, &depth, &throw_if_uncountable) == FAILURE) {
-        return;
+        RETURN_THROWS();
     }
-    if (!simdjson_validate_depth(depth)) {
-        RETURN_NULL();
+    if (!simdjson_validate_depth(depth, "simdjson_key_count", 4)) {
+        RETURN_THROWS();
     }
     simdjson_php_error_code error = php_simdjson_key_count(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), return_value, depth, throw_if_uncountable);
     if (error) {
@@ -167,6 +180,7 @@ PHP_FUNCTION (simdjson_key_count) {
             RETURN_LONG(0);
         }
         php_simdjson_throw_jsonexception(error);
+        RETURN_THROWS();
     }
 }
 
@@ -175,10 +189,10 @@ PHP_FUNCTION (simdjson_key_exists) {
     zend_string *key = NULL;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS|l", &json, &key, &depth) == FAILURE) {
-        return;
+        RETURN_THROWS();
     }
-    if (!simdjson_validate_depth(depth)) {
-        return;
+    if (!simdjson_validate_depth(depth, "simdjson_key_exists", 3)) {
+        RETURN_THROWS();
     }
     simdjson_php_error_code error = php_simdjson_key_exists(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), ZSTR_VAL(key), depth);
     switch (error) {
@@ -190,6 +204,7 @@ PHP_FUNCTION (simdjson_key_exists) {
             RETURN_FALSE;
         default:
             php_simdjson_throw_jsonexception(error);
+            RETURN_THROWS();
     }
 }
 
