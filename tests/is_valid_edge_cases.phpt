@@ -5,20 +5,20 @@ error_reporting=E_ALL
 display_errors=stderr
 --FILE--
 <?php
-var_dump(\simdjson_is_valid('[]', -1));
-var_dump(\simdjson_is_valid('[[]]', 2));
-var_dump(\simdjson_is_valid('[[]]', 1024));
-var_dump(\simdjson_is_valid('[[]]', 1));
-var_dump(\simdjson_is_valid('[[]]'));
+require_once __DIR__ . '/dump.inc';
+dump(function () { return simdjson_is_valid('[]', -1); });
+dump(function () { return simdjson_is_valid('[[]]', 2); });
+dump(function () { return simdjson_is_valid('[[]]', 1024); });
+dump(function () { return simdjson_is_valid('[[]]', 1); });
+dump(function () { return simdjson_is_valid('[[]]'); });
 echo "test deeply nested\n";
 $long = str_repeat('[', 3000) . str_repeat(']', 3000);
-var_dump(\simdjson_is_valid($long));
-var_dump(\simdjson_is_valid($long, 2999));
-var_dump(\simdjson_is_valid($long, 3000));
+dump(function () use ($long) { return simdjson_is_valid($long); });
+dump(function () use ($long) { return simdjson_is_valid($long, 2999); });
+dump(function () use ($long) { return simdjson_is_valid($long, 3000); });
 ?>
 --EXPECTF--
-Warning: simdjson_is_valid(): Depth must be greater than zero in %sis_valid_edge_cases.php on line 2
-NULL
+Caught SimdJsonValueError: simdjson_is_valid(): Argument #2 ($depth) must be greater than zero
 bool(true)
 bool(true)
 bool(false)

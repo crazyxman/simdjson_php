@@ -20,8 +20,8 @@
  -->
  <date>2022-10-14</date>
  <version>
-  <release>2.2.0dev</release>
-  <api>2.2.0dev</api>
+  <release>3.0.0dev</release>
+  <api>3.0.0dev</api>
  </version>
  <stability>
   <release>stable</release>
@@ -29,8 +29,14 @@
  </stability>
  <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
  <notes>
+* Add SimdJsonValueError. In php 8.0+, it extends ValueError, and it extends Error in older php versions.
+  This provides an API similar to the JSON module, which started throwing ValueError for invalid depths in php 8.0.
+* Throw SimdJsonValueError instead of emitting notices if $depth is too small or too large in all simdjson PHP functions.
+  simdjson_is_valid(), simdjson_key_count() and simdjson_key_exists() now have non-null return types.
+* Throw a SimdJsonException in simdjson_key_exists on error conditions such as invalid json, to be consistent with other simdjson PHP functions.
+* Add an optional boolean `$throw_if_uncountable = false` to simdjson_key_count.
+  When this is overridden to be true, simdjson_key_count will throw a SimdJsonException if the JSON pointer refers to a value that exists but is neither an array nor an object instead of returning 0.
 * Expose simdjson C APIs marked with PHP_SIMDJSON_API in php_simdjson.h to other C projects.
-* Ensure that that header file works when required by C projects and that publicly exposed functions are available.
  </notes>
  <contents>
   <dir name="/">
@@ -64,6 +70,7 @@
     <file name="decode_strict_types.phpt" role="test"/>
     <file name="decode_types.phpt" role="test"/>
     <file name="depth.phpt" role="test"/>
+    <file name="dump.inc" role="test"/>
     <file name="is_valid.phpt" role="test"/>
     <file name="is_valid_args.phpt" role="test"/>
     <file name="key_count.phpt" role="test"/>
@@ -94,7 +101,6 @@
      <file name="bug69187.phpt" role="test"/>
      <file name="fail001.phpt" role="test"/>
      <file name="json_decode_basic.phpt" role="test"/>
-     <file name="json_decode_error.phpt" role="test"/>
      <file name="json_decode_invalid_utf8.phpt" role="test"/>
      <file name="pass001.1_64bit.phpt" role="test"/>
      <file name="pass001.1.phpt" role="test"/>

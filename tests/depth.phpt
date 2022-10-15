@@ -5,8 +5,9 @@ display_errors=stderr
 error_reporting=E_ALL
 --FILE--
 <?php
-var_dump(simdjson_decode('[]', true, 0));
-var_dump(simdjson_key_value('[]', '', true, 0));
+require_once __DIR__ . '/dump.inc';
+
+// too small/large depths tested in decode_max_depth
 var_dump(simdjson_key_count('[]', '', 1));
 var_dump(simdjson_decode('[]', true, 1));
 echo "Test '[1]'\n";
@@ -29,10 +30,6 @@ var_dump(simdjson_decode('[[]]', true, 2));
 var_dump(simdjson_decode('[[1]]', true, 3));
 ?>
 --EXPECTF--
-Warning: simdjson_decode(): Depth must be greater than zero in %s on line 2
-NULL
-Warning: simdjson_key_value(): Depth must be greater than zero in %s on line 3
-NULL
 int(0)
 array(0) {
 }
