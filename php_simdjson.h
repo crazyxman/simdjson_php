@@ -115,6 +115,28 @@ typedef uint8_t simdjson_php_error_code;
 
 /* NOTE: Callers should check if len is greater than 4GB - simdjson will always return a non zero error code for those */
 
+/**
+ * Parses the given string into a return code, using the default singleton parser.
+ *
+ * This must be called after simdjson's request initialization phase and before simdjson's request shutdown phase.
+ * (e.g. PECLs should not use this during module or request initialization/shutdown)
+ */
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_parse_default(const char *json, size_t len, zval *return_value, bool associative, size_t depth);
+
+/**
+ * Checks if the given JSON is valid, using the default singleton parser.
+ * Returns 0 if it is valid.
+ */
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_validate_default(const char *json, size_t len, size_t depth);
+
+/**
+ * Returns or creates the singleton parser used internally by simdjson (e.g. for the `php_simdjson_*_default()` methods).
+ * (Thread-local in ZTS builds of PHP)
+ *
+ * Callers must NOT free this.
+ */
+PHP_SIMDJSON_API struct simdjson_php_parser *php_simdjson_get_default_singleton_parser(void);
+
 /* FIXME add php_simdjson_get_default_singleton_parser api */
 /* FIXME add php_simdjson_decode_with_default_singleton_parser(return_value, json, len, bool associative) */
 
@@ -142,16 +164,9 @@ PHP_SIMDJSON_API struct simdjson_php_parser* php_simdjson_create_parser(void);
  */
 PHP_SIMDJSON_API void php_simdjson_free_parser(struct simdjson_php_parser* parser);
 /**
- * Returns true if the given json string is valid
+ * Returns 0 if the given json string is valid
  */
-PHP_SIMDJSON_API bool php_simdjson_is_valid(struct simdjson_php_parser* parser, const char *json, size_t len, size_t depth);
-/**
- * Parses the given string into a return code, using the default singleton parser.
- *
- * This must be called after simdjson's request initialization phase and before simdjson's request shutdown phase.
- * (e.g. PECLs should not use this during module or request initialization/shutdown)
- */
-PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_parse_default(const char *json, size_t len, zval *return_value, bool associative, size_t depth);
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_validate(struct simdjson_php_parser* parser, const char *json, size_t len, size_t depth);
 /**
  * Parses the given string into a return code.
  *

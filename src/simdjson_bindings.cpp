@@ -337,14 +337,10 @@ PHP_SIMDJSON_API void php_simdjson_free_parser(simdjson_php_parser* parser) /* {
     delete parser;
 }
 
-PHP_SIMDJSON_API bool php_simdjson_is_valid(simdjson_php_parser* parser, const char *json, size_t len, size_t depth) /* {{{ */ {
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_validate(simdjson_php_parser* parser, const char *json, size_t len, size_t depth) /* {{{ */ {
     simdjson::dom::element doc;
     /* The depth is passed in to ensure this behaves the same way for the same arguments */
-    auto error = build_parsed_json_cust(parser, doc, json, len, true, depth);
-    if (error) {
-        return false;
-    }
-    return true;
+    return build_parsed_json_cust(parser, doc, json, len, true, depth);
 }
 
 /* }}} */

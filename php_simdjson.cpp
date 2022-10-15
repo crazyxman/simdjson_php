@@ -95,6 +95,10 @@ static simdjson_php_parser *simdjson_get_parser() {
     return parser;
 }
 
+PHP_SIMDJSON_API struct simdjson_php_parser *php_simdjson_get_default_singleton_parser(void) {
+    return simdjson_get_parser();
+}
+
 // The simdjson parser accepts strings with at most 32-bit lengths, for now.
 #define SIMDJSON_MAX_DEPTH ((zend_long)((SIZE_MAX / 8) < (UINT32_MAX / 2) ? (SIZE_MAX / 8) : (UINT32_MAX / 2)))
 
@@ -125,12 +129,16 @@ PHP_FUNCTION (simdjson_is_valid) {
     if (!simdjson_validate_depth(depth, "simdjson_is_valid", 2)) {
         RETURN_THROWS();
     }
-    bool is_json = php_simdjson_is_valid(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), depth);
-    ZVAL_BOOL(return_value, is_json);
+    simdjson_php_error_code error = php_simdjson_validate(simdjson_get_parser(), ZSTR_VAL(json), ZSTR_LEN(json), depth);
+    ZVAL_BOOL(return_value, !error);
 }
 
 PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_parse_default(const char *json, size_t len, zval *return_value, bool associative, size_t depth) {
     return php_simdjson_parse(simdjson_get_parser(), json, len, return_value, associative, depth);
+}
+
+PHP_SIMDJSON_API simdjson_php_error_code php_simdjson_validate_default(const char *json, size_t len, size_t depth) {
+    return php_simdjson_validate(simdjson_get_parser(), json, len, depth);
 }
 
 PHP_FUNCTION (simdjson_decode) {
