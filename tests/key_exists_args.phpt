@@ -14,5 +14,5 @@ Function [ <internal:simdjson> function simdjson_key_exists ] {
     Parameter #1 [ <required> string $key ]
     Parameter #2 [ <optional> int%S $depth%S ]
   }
-  - Return [ %Sbool%S ]
+  - Return [ bool%S ]
 }

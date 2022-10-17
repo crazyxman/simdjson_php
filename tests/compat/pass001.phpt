@@ -1,7 +1,11 @@
 --TEST--
 JSON (http://www.crockford.com/JSON/JSON_checker/test/pass1.json)
 --SKIPIF--
-<?php if (!function_exists('json_encode')) { echo "skip json_encode not available\n"; } ?>
+<?php
+if (PHP_INT_SIZE != 8) die("skip this test is for 64bit platform only");
+if (!function_exists('json_encode')) { echo "skip json_encode not available\n"; }
+if (PHP_VERSION < 70100) die("skip this test is for php 7.1+ only");
+?>
 --INI--
 serialize_precision=-1
 --FILE--

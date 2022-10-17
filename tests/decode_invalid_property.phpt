@@ -57,7 +57,7 @@ array(2) {
   string(4) "test"
 }
 string(21) "Invalid property name"
-object(stdClass)#2 (1) {
+object(stdClass)#1 (1) {
   [""]=>
   bool(true)
 }
