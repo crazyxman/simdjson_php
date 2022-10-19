@@ -18,10 +18,10 @@
   <active>yes</active>
  </lead>
  -->
- <date>2022-10-17</date>
+ <date>2022-10-19</date>
  <version>
-  <release>3.0.0</release>
-  <api>3.0.0</api>
+  <release>4.0.0</release>
+  <api>4.0.0</api>
  </version>
  <stability>
   <release>stable</release>
@@ -29,14 +29,14 @@
  </stability>
  <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
  <notes>
-* Add SimdJsonValueError. In php 8.0+, it extends ValueError, and it extends Error in older php versions.
-  This provides an API similar to the JSON module, which started throwing ValueError for invalid depths in php 8.0.
-* Throw SimdJsonValueError instead of emitting notices if $depth is too small or too large in all simdjson PHP functions.
-  simdjson_is_valid(), simdjson_key_count() and simdjson_key_exists() now have non-null return types.
-* Throw a SimdJsonException in simdjson_key_exists on error conditions such as invalid json, to be consistent with other simdjson PHP functions.
-* Add an optional boolean `$throw_if_uncountable = false` to simdjson_key_count.
-  When this is overridden to be true, simdjson_key_count will throw a SimdJsonException if the JSON pointer refers to a value that exists but is neither an array nor an object instead of returning 0.
-* Rename the parameter $assoc to $associative in simdjson_decode and simdjson_key_value, to match naming practices used in json_decode()
+* Make the `SIMDJSON_ERR_*` constants case-sensitive in all PHP versions.
+  (The code it was based on was missing the flag needed to mark constants as case sensitive before PHP 8)
+* Fix a bug that prevented using JSON pointer in `simdjson_key_count`, `simdjson_key_exists`, and `simdjson_key_value` with a leading slash https://www.rfc-editor.org/rfc/rfc6901.html.
+
+  This bug was introduced when working around test failures following a change in json pointer validation in the underlying C simdjson library.
+* "" in a JSON pointer continues to refer to the entire document.
+* "/" in a JSON pointer now properly refers to the key that is the empty string.
+* Continue to allow the non-standard omission of the leading "/" for compatibility with earlier PECL releases. This may be deprecated in a subsequent release.
  </notes>
  <contents>
   <dir name="/">
@@ -83,6 +83,7 @@
     <file name="key_value_exception.phpt" role="test"/>
     <file name="key_value_int.phpt" role="test"/>
     <file name="key_value_result.phpt" role="test"/>
+    <file name="key_value_slash.phpt" role="test"/>
     <file name="uint64_overflow.phpt" role="test"/>
     <file name="_files/result.json" role="test"/>
     <dir name="compat">
@@ -124,6 +125,27 @@
  <providesextension>simdjson</providesextension>
  <extsrcrelease/>
  <changelog>
+  <release>
+   <version>
+    <release>3.0.0</release>
+    <api>3.0.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
+   <notes>
+* Add SimdJsonValueError. In php 8.0+, it extends ValueError, and it extends Error in older php versions.
+  This provides an API similar to the JSON module, which started throwing ValueError for invalid depths in php 8.0.
+* Throw SimdJsonValueError instead of emitting notices if $depth is too small or too large in all simdjson PHP functions.
+  simdjson_is_valid(), simdjson_key_count() and simdjson_key_exists() now have non-null return types.
+* Throw a SimdJsonException in simdjson_key_exists on error conditions such as invalid json, to be consistent with other simdjson PHP functions.
+* Add an optional boolean `$throw_if_uncountable = false` to simdjson_key_count.
+  When this is overridden to be true, simdjson_key_count will throw a SimdJsonException if the JSON pointer refers to a value that exists but is neither an array nor an object instead of returning 0.
+* Rename the parameter $assoc to $associative in simdjson_decode and simdjson_key_value, to match naming practices used in json_decode()
+   </notes>
+  </release>
   <release>
    <date>2022-10-14</date>
    <version>

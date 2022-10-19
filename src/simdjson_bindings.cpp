@@ -48,7 +48,9 @@ PHP_SIMDJSON_API void php_simdjson_throw_jsonexception(simdjson_php_error_code e
 static inline simdjson::simdjson_result<simdjson::dom::element>
 get_key_with_optional_prefix(simdjson::dom::element &doc, std::string_view json_pointer)
 {
-    auto std_pointer = (json_pointer.empty() ? "" : "/") + std::string(json_pointer.begin(), json_pointer.end());
+    /* https://www.rfc-editor.org/rfc/rfc6901.html */
+    /* TODO: Deprecate in a subsequent minor release and remove in a major release to comply with the standard. */
+    auto std_pointer = ((!json_pointer.empty() && json_pointer[0] != '/') ? "/" : "") + std::string(json_pointer.begin(), json_pointer.end());
     return doc.at_pointer(std_pointer);
 }
 
