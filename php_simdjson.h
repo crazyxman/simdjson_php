@@ -51,12 +51,13 @@ BEGIN_EXTERN_C()
 extern zend_module_entry simdjson_module_entry;
 #define phpext_simdjson_ptr &simdjson_module_entry
 
-#define PHP_SIMDJSON_VERSION                  "4.0.0"
+#define PHP_SIMDJSON_VERSION                  "4.0.1dev"
 /**
  * PHP_SIMDJSON_VERSION_ID has the same format as PHP_VERSION_ID: Major version * 10000 + Minor version * 100 + Patch version.
  * This is meant for use by PECL extensions that depend on simdjson.
+ * (e.g. 4.5.6dev and 4.5.6 would be 40506)
  */
-#define PHP_SIMDJSON_VERSION_ID               40000
+#define PHP_SIMDJSON_VERSION_ID               40001
 
 #define SIMDJSON_SUPPORT_URL                  "https://github.com/crazyxman/simdjson_php"
 

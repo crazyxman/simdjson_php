@@ -5,8 +5,8 @@ simdjson_php bindings for the [simdjson project](https://github.com/lemire/simdj
 [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/crazyxman/simdjson_php?svg=true)](https://ci.appveyor.com/project/crazyxman/simdjson-php)
 
 ## Requirement
-- PHP 7 +
-- We support platforms like Linux or macOS
+
+- PHP 7.0+ (The latest php version was 8.2 at the time of writing)
 - Prerequisites: g++ (version 7 or better) or clang++ (version 6 or better), and a 64-bit system with a command-line shell (e.g., Linux, macOS, freeBSD). We also support programming environments like Visual Studio and Xcode, but different steps are needed
 
 ## Installing
@@ -63,11 +63,11 @@ $jsonString = <<<'JSON'
 }
 JSON;
 
-//Check if a JSON string is valid:
+// Check if a JSON string is valid:
 $isValid = simdjson_is_valid($jsonString); //return bool
 var_dump($isValid);  // true
 
-//Parsing a JSON string. similar to the json_decode() function but without the fourth argument
+// Parsing a JSON string. similar to the json_decode() function but without the fourth argument
 try {
     $parsedJSON = simdjson_decode($jsonString, true, 512); //return array|object|null. "null" string is not a standard json
     var_dump($parsedJSON); // PHP array
@@ -75,15 +75,16 @@ try {
     echo "Failed to parse $jsonString: {$e->getMessage()}\n";
 }
 
-//note. "/" is a separator. Can be used as the "key" of the object and the "index" of the array
-//E.g. "Image/Thumbnail/Url" is ok.
+// note. "/" is a separator. Can be used as the "key" of the object and the "index" of the array
+// E.g. "/Image/Thumbnail/Url" is recommended starting in simdjson 4.0.0,
+// but "Image/Thumbnail/Url" is accepted for now.
 
-
-//get the value of a "key" in a json string
-$value = simdjson_key_value($jsonString, "Image/Thumbnail/Url");
+// get the value of a "key" in a json string
+// (before simdjson 4.0.0, the recommended leading "/" had to be omitted)
+$value = simdjson_key_value($jsonString, "/Image/Thumbnail/Url");
 var_dump($value); // string(38) "http://www.example.com/image/481989943"
 
-$value = simdjson_key_value($jsonString, "Image/IDs/4", true);
+$value = simdjson_key_value($jsonString, "/Image/IDs/4", true);
 var_dump($value);
 /*
 array(1) {
@@ -92,12 +93,13 @@ array(1) {
 }
 */
 
-//check if the key exists. return true|false|null. "true" exists, "false" does not exist, "null" string is not a standard json
-$res = simdjson_key_exists($jsonString, "Image/IDs/1");
+// check if the key exists. return true|false|null. "true" exists, "false" does not exist,
+// throws for invalid JSON.
+$res = simdjson_key_exists($jsonString, "/Image/IDs/1");
 var_dump($res) //bool(true)
 
 // count the values
-$res = simdjson_key_count($jsonString, "Image/IDs");
+$res = simdjson_key_count($jsonString, "/Image/IDs");
 var_dump($res) //int(5)
 
 ```
