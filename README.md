@@ -69,7 +69,8 @@ var_dump($isValid);  // true
 
 // Parsing a JSON string. similar to the json_decode() function but without the fourth argument
 try {
-    $parsedJSON = simdjson_decode($jsonString, true, 512); //return array|object|null. "null" string is not a standard json
+    // returns array|stdClass|string|float|int|bool|null.
+    $parsedJSON = simdjson_decode($jsonString, true, 512);
     var_dump($parsedJSON); // PHP array
 } catch (RuntimeException $e) {
     echo "Failed to parse $jsonString: {$e->getMessage()}\n";
@@ -140,7 +141,8 @@ function simdjson_is_valid(string $json, int $depth = 512) : bool {}
  * @param string $json The JSON string being decoded
  * @param string $key The JSON pointer being requested
  * @param int $depth The maximum nesting depth of the structure being decoded.
- * @param bool $throw_if_uncountable If true, then throw SimdJsonException instead of returning 0 for JSON pointers
+ * @param bool $throw_if_uncountable If true, then throw SimdJsonException instead of
+                                     returning 0 for JSON pointers
                                      to values that are neither objects nor arrays.
  * @return int
  * @throws SimdJsonException for invalid JSON or invalid JSON pointer
