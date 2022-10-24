@@ -20,8 +20,8 @@
  -->
  <date>2022-10-19</date>
  <version>
-  <release>4.0.0</release>
-  <api>4.0.0</api>
+  <release>4.0.1dev</release>
+  <api>4.0.1dev</api>
  </version>
  <stability>
   <release>stable</release>
@@ -29,14 +29,7 @@
  </stability>
  <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
  <notes>
-* Make the `SIMDJSON_ERR_*` constants case-sensitive in all PHP versions.
-  (The code it was based on was missing the flag needed to mark constants as case sensitive before PHP 8)
-* Fix a bug that prevented using JSON pointer in `simdjson_key_count`, `simdjson_key_exists`, and `simdjson_key_value` with a leading slash https://www.rfc-editor.org/rfc/rfc6901.html.
-
-  This bug was introduced when working around test failures following a change in json pointer validation in the underlying C simdjson library.
-* "" in a JSON pointer continues to refer to the entire document.
-* "/" in a JSON pointer now properly refers to the key that is the empty string.
-* Continue to allow the non-standard omission of the leading "/" for compatibility with earlier PECL releases. This may be deprecated in a subsequent release.
+* Update the README
  </notes>
  <contents>
   <dir name="/">
@@ -125,6 +118,28 @@
  <providesextension>simdjson</providesextension>
  <extsrcrelease/>
  <changelog>
+  <release>
+   <date>2022-10-19</date>
+   <version>
+    <release>4.0.0</release>
+    <api>4.0.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
+   <notes>
+* Make the `SIMDJSON_ERR_*` constants case-sensitive in all PHP versions.
+  (The code it was based on was missing the flag needed to mark constants as case sensitive before PHP 8)
+* Fix a bug that prevented using JSON pointer in `simdjson_key_count`, `simdjson_key_exists`, and `simdjson_key_value` with a leading slash https://www.rfc-editor.org/rfc/rfc6901.html.
+
+  This bug was introduced when working around test failures following a change in json pointer validation in the underlying C simdjson library.
+* "" in a JSON pointer continues to refer to the entire document.
+* "/" in a JSON pointer now properly refers to the key that is the empty string.
+* Continue to allow the non-standard omission of the leading "/" for compatibility with earlier PECL releases. This may be deprecated in a subsequent release.
+   </notes>
+  </release>
   <release>
    <version>
     <release>3.0.0</release>
