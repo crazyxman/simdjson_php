@@ -2,12 +2,38 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  PHP84-alpine:
+    name: PHP 8.4 Alpine 3.19
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Build extension"
+        run: "docker build -t simdjsontest -f docker_php8.4-alpine ."
+
+      - name: "Show"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
+
+  PHP83-alpine:
+    name: PHP 8.3 Alpine 3.17
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Build extension"
+        run: "docker build -t simdjsontest -f docker_php8.3-alpine ."
+
+      - name: "Show"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
+
   PHP82-alpine:
     name: PHP 8.2 Alpine 3.16
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: "Build extension"
         run: "docker build -t simdjsontest -f docker_php8.2-alpine ."
@@ -20,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: "Build extension"
         run: "docker build -t simdjsontest -f docker_php8.1-alpine ."
@@ -33,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: "Build extension"
         run: "docker build -t simdjsontest -f docker_php8.0-alpine ."
@@ -46,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: "Build extension"
         run: "docker build -t simdjsontest -f docker_php7.4-alpine ."
@@ -59,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: "Build extension"
         run: "docker build -t simdjsontest -f docker_php7.3-alpine ."
@@ -72,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: "Build extension"
         run: "docker build -t simdjsontest -f docker_php7.2-alpine ."
@@ -85,7 +111,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: "Build extension"
         run: "docker build -t simdjsontest -f docker_php7.1-alpine ."
@@ -105,6 +131,9 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2"
+          - "8.3"
+          - "8.4"
         os: [ubuntu-latest]
         experimental: [false]
     runs-on: ${{ matrix.os }}
@@ -112,7 +141,7 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
