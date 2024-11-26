@@ -123,9 +123,13 @@ static zend_always_inline bool simdjson_validate_depth(zend_long depth, const ch
 PHP_FUNCTION (simdjson_is_valid) {
     zend_string *json = NULL;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|l", &json, &depth) == FAILURE) {
-        RETURN_THROWS();
-    }
+
+    ZEND_PARSE_PARAMETERS_START(1, 2)
+        Z_PARAM_STR(json)
+        Z_PARAM_OPTIONAL
+        Z_PARAM_LONG(depth)
+    ZEND_PARSE_PARAMETERS_END();
+
     if (!simdjson_validate_depth(depth, "simdjson_is_valid", 2)) {
         RETURN_THROWS();
     }
@@ -145,9 +149,14 @@ PHP_FUNCTION (simdjson_decode) {
     zend_bool associative = 0;
     zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
     zend_string *json = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|bl", &json, &associative, &depth) == FAILURE) {
-        RETURN_THROWS();
-    }
+
+    ZEND_PARSE_PARAMETERS_START(1, 3)
+        Z_PARAM_STR(json)
+        Z_PARAM_OPTIONAL
+        Z_PARAM_BOOL(associative)
+        Z_PARAM_LONG(depth)
+    ZEND_PARSE_PARAMETERS_END();
+
     if (!simdjson_validate_depth(depth, "simdjson_decode", 2)) {
         RETURN_THROWS();
     }
