@@ -84,6 +84,9 @@ SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_key_count_arginfo, 0, 
         ZEND_ARG_TYPE_INFO(0, throw_if_uncountable, _IS_BOOL, 0)
 ZEND_END_ARG_INFO()
 
+SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_cleanup_arginfo, 0, 0, _IS_BOOL, 0)
+ZEND_END_ARG_INFO()
+
 #define SIMDJSON_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(simdjson, v)
 static simdjson_php_parser *simdjson_get_parser() {
     simdjson_php_parser *parser = SIMDJSON_G(parser);
@@ -221,6 +224,19 @@ PHP_FUNCTION (simdjson_key_exists) {
     }
 }
 
+PHP_FUNCTION (simdjson_cleanup) {
+    if (zend_parse_parameters_none() == FAILURE) {
+        RETURN_THROWS();
+    }
+
+    simdjson_php_parser *parser = SIMDJSON_G(parser);
+    if (EXPECTED(parser != NULL)) {
+        php_simdjson_free_parser(parser);
+        SIMDJSON_G(parser) = NULL;
+    }
+    RETURN_TRUE;
+}
+
 /* {{{ simdjson_functions[]
 */
 zend_function_entry simdjson_functions[] = {
@@ -229,6 +245,7 @@ zend_function_entry simdjson_functions[] = {
     PHP_FE(simdjson_key_value, simdjson_key_value_arginfo)
     PHP_FE(simdjson_key_exists, simdjson_key_exists_arginfo)
     PHP_FE(simdjson_key_count, simdjson_key_count_arginfo)
+    PHP_FE(simdjson_cleanup, simdjson_cleanup_arginfo)
     {NULL, NULL, NULL}
 };
 /* }}} */
