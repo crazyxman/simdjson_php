@@ -84,6 +84,10 @@ SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_key_count_arginfo, 0, 
         ZEND_ARG_TYPE_INFO(0, throw_if_uncountable, _IS_BOOL, 0)
 ZEND_END_ARG_INFO()
 
+SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_is_valid_utf8_arginfo, 0, 0, _IS_BOOL, 0)
+        ZEND_ARG_TYPE_INFO(0, string, IS_STRING, 0)
+ZEND_END_ARG_INFO()
+
 #define SIMDJSON_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(simdjson, v)
 static simdjson_php_parser *simdjson_get_parser() {
     simdjson_php_parser *parser = SIMDJSON_G(parser);
@@ -221,6 +225,30 @@ PHP_FUNCTION (simdjson_key_exists) {
     }
 }
 
+PHP_FUNCTION (simdjson_is_valid_utf8) {
+    zend_string *string = NULL;
+
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+        Z_PARAM_STR(string)
+    ZEND_PARSE_PARAMETERS_END();
+
+#ifdef ZSTR_IS_VALID_UTF8
+     // If string was already successfully validated, just return true
+     if (ZSTR_IS_VALID_UTF8(string)) {
+         RETURN_TRUE;
+     }
+#endif
+
+    bool is_ok = simdjson::validate_utf8(ZSTR_VAL(string), ZSTR_LEN(string));
+#ifdef IS_STR_VALID_UTF8
+    if (is_ok) {
+        // String is UTF-8 valid, so we can also set proper flag
+        GC_ADD_FLAGS(string, IS_STR_VALID_UTF8);
+    }
+#endif
+    RETURN_BOOL(is_ok);
+}
+
 /* {{{ simdjson_functions[]
 */
 zend_function_entry simdjson_functions[] = {
@@ -229,6 +257,7 @@ zend_function_entry simdjson_functions[] = {
     PHP_FE(simdjson_key_value, simdjson_key_value_arginfo)
     PHP_FE(simdjson_key_exists, simdjson_key_exists_arginfo)
     PHP_FE(simdjson_key_count, simdjson_key_count_arginfo)
+    PHP_FE(simdjson_is_valid_utf8, simdjson_is_valid_utf8_arginfo)
     {NULL, NULL, NULL}
 };
 /* }}} */
