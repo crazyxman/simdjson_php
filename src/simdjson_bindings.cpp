@@ -26,6 +26,10 @@ extern "C" {
 #define zend_string_release_ex(s, persistent) zend_string_release((s))
 #endif
 
+#ifndef ZVAL_EMPTY_ARRAY
+#define ZVAL_EMPTY_ARRAY(value) array_init(value)
+#endif
+
 #define SIMDJSON_DEPTH_CHECK_THRESHOLD 100000
 
 PHP_SIMDJSON_API const char* php_simdjson_error_msg(simdjson_php_error_code error)
@@ -52,6 +56,17 @@ get_key_with_optional_prefix(simdjson::dom::element &doc, std::string_view json_
     /* TODO: Deprecate in a subsequent minor release and remove in a major release to comply with the standard. */
     auto std_pointer = ((!json_pointer.empty() && json_pointer[0] != '/') ? "/" : "") + std::string(json_pointer.begin(), json_pointer.end());
     return doc.at_pointer(std_pointer);
+}
+
+/** Init packed array with expected size */
+static zend_always_inline zend_array* simdjson_init_packed_array(zval *zv, uint32_t size) {
+    zend_array *arr;
+    array_init_size(zv, size);
+    arr = Z_ARR_P(zv);
+#if PHP_VERSION_ID >= 70300
+    zend_hash_real_init_packed(arr);
+#endif
+    return arr;
 }
 
 static simdjson::error_code
@@ -163,41 +178,39 @@ static simdjson_php_error_code create_array(simdjson::dom::element element, zval
             break;
         case simdjson::dom::element_type::ARRAY : {
             const auto json_array = element.get_array().value_unsafe();
-#if PHP_VERSION_ID >= 70300
             if (json_array.size() == 0) {
                 /* Reuse the immutable empty array to save memory */
                 ZVAL_EMPTY_ARRAY(return_value);
                 break;
             }
-#endif
-            zend_array *arr;
-            array_init(return_value);
-            arr = Z_ARR_P(return_value);
 
+            zend_array *arr = simdjson_init_packed_array(return_value, json_array.size());
+#if PHP_VERSION_ID >= 80200
+            ZEND_HASH_FILL_PACKED(arr) {
+                for (simdjson::dom::element child : json_array) {
+                    create_array(child, __fill_val);
+                    ZEND_HASH_FILL_NEXT();
+                }
+            } ZEND_HASH_FILL_END();
+#else
             for (simdjson::dom::element child : json_array) {
                 zval array_element;
                 simdjson_php_error_code error = create_array(child, &array_element);
-                if (UNEXPECTED(error)) {
-                    zval_ptr_dtor(return_value);
-                    ZVAL_NULL(return_value);
-                    return error;
-                }
-                zend_hash_next_index_insert(arr, &array_element);
+                zend_hash_next_index_insert_new(arr, &array_element);
             }
-
+#endif
             break;
         }
         case simdjson::dom::element_type::OBJECT : {
             const auto json_object = element.get_object().value_unsafe();
-#if PHP_VERSION_ID >= 70300
             if (json_object.size() == 0) {
                 /* Reuse the immutable empty array to save memory */
                 ZVAL_EMPTY_ARRAY(return_value);
                 break;
             }
-#endif
+
             zend_array *arr;
-            array_init(return_value);
+            array_init_size(return_value, json_object.size());
             arr = Z_ARR_P(return_value);
 
             for (simdjson::dom::key_value_pair field : json_object) {
@@ -243,16 +256,13 @@ static simdjson_php_error_code create_object(simdjson::dom::element element, zva
             break;
         case simdjson::dom::element_type::ARRAY : {
             const auto json_array = element.get_array().value_unsafe();
-#if PHP_VERSION_ID >= 70300
             if (json_array.size() == 0) {
                 /* Reuse the immutable empty array to save memory */
                 ZVAL_EMPTY_ARRAY(return_value);
                 return simdjson::SUCCESS;
             }
-#endif
-            zend_array *arr;
-            array_init(return_value);
-            arr = Z_ARR_P(return_value);
+
+            zend_array *arr = simdjson_init_packed_array(return_value, json_array.size());
 
             for (simdjson::dom::element child : json_array) {
                 zval value;
